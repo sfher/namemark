@@ -137,7 +137,6 @@ private:
     void process_turn();
     void recover_ap();
     void check_win_condition();
-    character* select_target(character& actor);
     const Team* get_team_of(const character& c) const;  // 辅助函数
 };
 

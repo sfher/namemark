@@ -35,6 +35,42 @@ public:
     bool can_execute(const character* c, const FightContext& ctx) const override;
     bool execute(character* c, FightContext& ctx) override;
 };
+//冲撞行为
+class Smash : public act {
+public:
+    Smash();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+//连击行为
+class ComboAttack : public act {
+public:
+    ComboAttack();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+//魔法飞弹
+class MagicMissile : public act {
+public:
+    MagicMissile();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+//加速魔法
+class Speedup : public act {
+public:
+    Speedup();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+
+// 暴击判定器
+class CritCalculator {
+public:
+    // 计算暴击后的伤害（如果暴击，返回暴击伤害；否则返回原伤害）
+    static int apply(character* attacker, int base_damage);
+};
 
 // 防御行为
 class Defense : public act {

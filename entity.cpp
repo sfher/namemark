@@ -32,19 +32,20 @@ character::character(std::string name) : name_(name) {
 
 void character::init_default_actions() {
     actions_.push_back(std::make_unique<Attack>());
-    actions_.push_back(std::make_unique<Defense>());
+    //actions_.push_back(std::make_unique<Defense>());
+    //防御还没做好，先注释掉
+    actions_.push_back(std::make_unique<Smash>());
+    actions_.push_back(std::make_unique<ComboAttack>());
+    actions_.push_back(std::make_unique<MagicMissile>());
+    actions_.push_back(std::make_unique<Speedup>());
     // 可在此添加更多技能
 }
 
 void character::act(FightContext& ctx) {
-    for (auto& action : actions_) {
+    for (auto& action : actions_) { //重复执行直到体力耗尽
         if (action->can_execute(this, ctx)) {
             action->execute(this, ctx);
-            return;
         }
-    }
-    if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::yellow) << name_ << " 无法行动！" << resetcolor() << std::endl;
     }
 }
 
@@ -132,7 +133,9 @@ void character::setbasicattr() {
         uint64_t uh = std::abs(hashcode);
         bool lucky = ((uh >> 7) % 100) < 5;
         setattribute("HP", 120 + (uh % 60) + 30 * lucky, true);
+        setattribute("MP", 120 + ((uh >> 7) % 60) + 30 * lucky, true);
         setattribute("ATK", 30 + ((uh >> 1) % 20) + 15 * lucky, true);
+        setattribute("MATK", 30 + ((uh >> 6) % 20) + 15 * lucky, true);
         setattribute("DEF", 10 + ((uh >> 2) % 10) + 15 * lucky, true);
         setattribute("SPD", 20 + ((uh >> 3) % 10) + 15 * lucky, true);
         setattribute("CRIT", 10 + ((uh >> 4) % 10) + 15 * lucky, true);
@@ -224,14 +227,14 @@ void FightComponent::add_team(Team& team) {
     teams_.push_back(std::ref(team));
 }
 
-void FightComponent::start() {
+void FightComponent::start() { //开始游戏~
     build_queue();
     while (!finished_) {
         process_turn();
     }
 }
 
-void FightComponent::build_queue() {
+void FightComponent::build_queue() { //创建队列
     while (!queue_.empty()) queue_.pop();
     for (const auto& team_ref : teams_) {
         const Team& team = team_ref.get();
@@ -264,7 +267,16 @@ void FightComponent::process_turn() {
         return;
     }
 
-    // 构建战斗上下文
+    // 获取最小消耗（临时硬编码为 10，防御消耗）
+    const int min_cost = 10;
+    if (top.current_ap < min_cost) {
+        // 所有角色 AP 都不足，全局恢复一次
+        recover_ap();
+        build_queue();
+        return;
+    }
+
+    // 构建战斗上下文（同现有代码）
     FightContext ctx;
     const Team* actor_team = get_team_of(*top.actor);
     if (actor_team) {
@@ -283,10 +295,10 @@ void FightComponent::process_turn() {
         }
     }
 
-    // 执行行为（内部会检查资源）
+    // 执行行为
     top.actor->act(ctx);
 
-    // 重新入队（如果还活着）
+    // 重新入队
     if (top.actor->is_alive()) {
         int new_ap = top.actor->get_attribute("C_AP");
         queue_.push({ top.actor, new_ap });
@@ -304,7 +316,7 @@ void FightComponent::recover_ap() {
                 int spd = c.get_attribute("SPD");
                 if (spd <= 0) spd = 20;
                 int old_ap = c.get_attribute("C_AP");
-                int new_ap = old_ap + spd;
+                int new_ap = old_ap + spd + rand()%10; //浮动
                 c.setattribute("C_AP", new_ap, false);
             }
         }
@@ -325,21 +337,6 @@ void FightComponent::check_win_condition() {
         finished_ = true;
         winner_ = (alive_teams == 1) ? last_alive : nullptr;
     }
-}
-
-character* FightComponent::select_target(character& actor) {
-    // 此函数不再使用，因为目标选择已由行为类处理，但保留以防万一
-    const Team* actor_team = get_team_of(actor);
-    if (!actor_team) return nullptr;
-    for (const auto& team_ref : teams_) {
-        const Team& team = team_ref.get();
-        if (&team == actor_team) continue;
-        for (const auto& ref : team.get_members()) {
-            character& c = ref.get();
-            if (c.is_alive()) return &c;
-        }
-    }
-    return nullptr;
 }
 
 const Team* FightComponent::get_team_of(const character& c) const {
