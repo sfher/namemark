@@ -259,7 +259,7 @@ namespace customio {
         // 计算每列最大宽度
         for (const auto& row : data) {
             for (size_t i = 0; i < row.size() && i < cols; ++i) {
-                widths[i] = max(widths[i], row[i].size());
+                widths[i] = std::max(widths[i], row[i].size());
             }
         }
 
