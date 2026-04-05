@@ -1,9 +1,18 @@
 ﻿#pragma once
+
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <functional> 
+#include <memory>    
 
-// 前向声明（避免循环包含）
+// If a macro named 'act' was defined by some other header it will break
+// using 'act' as a class name (e.g. "std::unique_ptr<act>"). Undefine it
+// here so the class declaration below is not affected.
+#ifdef act
+#undef act
+#endif
+
 class character;
 struct FightContext;
 
@@ -27,6 +36,26 @@ public:
     void set_consume(const std::string& name, int value) { consume_[name] = value; }
     std::string get_name() const { return name_; }
 };
+
+//技能工厂
+struct SkillInfo {
+    std::string name;
+    int acquire_chance;
+    int weight;
+    std::function<std::unique_ptr<act>()> factory;
+};
+
+class SkillRegistry {
+public:
+    static void registerSkill(const std::string& id, const SkillInfo& info);
+    static const SkillInfo* getSkillInfo(const std::string& id);
+    static const std::unordered_map<std::string, SkillInfo>& getAllSkills();
+private:
+    static std::unordered_map<std::string, SkillInfo> skills_;
+};
+
+// 注册所有技能（在实现文件中定义）
+void registerAllSkills();
 
 // 攻击行为
 class Attack : public act {
@@ -64,6 +93,53 @@ public:
     bool execute(character* c, FightContext& ctx) override;
 };
 
+//毒魔法
+class PoisonMagic : public act {
+public:
+    PoisonMagic();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+//火球术
+class Fireball : public act {
+public:
+    Fireball();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+//治愈魔法
+class HealMagic : public act {
+public:
+    HealMagic();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+//魔法重拳
+class MagicPunch : public act {
+public:
+    MagicPunch();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+// 裂地术
+class GroundFissure : public act {
+public:
+    GroundFissure();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+// 闪电术
+class LightningChain : public act {
+public:
+    LightningChain();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
 
 // 暴击判定器
 class CritCalculator {

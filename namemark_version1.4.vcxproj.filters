@@ -27,6 +27,9 @@
     <ClCompile Include="act.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="console.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -39,6 +42,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="act.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="console.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

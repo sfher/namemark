@@ -128,12 +128,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="act.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="customio.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="namemark_version1.4.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="act.h" />
+    <ClInclude Include="console.h" />
     <ClInclude Include="customio.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="resource.h" />
