@@ -8,13 +8,11 @@
 #include <functional>
 #include <algorithm>
 #include <queue>
-#include <memory>       // for unique_ptr
+#include <memory>
 
-// 前向声明 act 相关类（避免循环依赖）
 class act;
 struct FightContext;
 
-// 规则枚举
 enum rule {
     SUMMON_BASIC_ATTR = 0x01,
     SHOW_ATTRIBUTES = 0x02,
@@ -23,7 +21,6 @@ enum rule {
     BATTLE_WITHOUT_OUTPUT = 0x05
 };
 
-// 顶层抽象类
 class entity {
 public:
     entity() = default;
@@ -35,7 +32,6 @@ public:
     virtual int get_attribute(const std::string& attr_name) const = 0;
 };
 
-// 抽象模板类（规则管理）
 class stereotype : public entity {
 protected:
     std::unordered_map<int, bool> rule_;
@@ -49,21 +45,19 @@ public:
     }
 };
 
-// 前向声明 Team
 class Team;
 
-// 具体角色类
 class character : public stereotype {
 private:
-    int calculate_damage(character& target);  // 保留用于评分系统，可废弃
-    static std::mt19937& get_random_engine(); // 保留用于评分系统
+    int calculate_damage(character& target);
+    static std::mt19937& get_random_engine();
 
     std::string name_ = "character";
     int64_t hashcode = 0;
     std::unordered_map<std::string, std::pair<int, bool>> attribute_{};
-    std::vector<std::string> aegis; //神之庇护
-    std::vector<std::unique_ptr<act>> actions_;  // 行为列表
-    std::unordered_map<std::string, std::pair<int, int>> buffs_; // buff系统: buff名字 -> {效果值, 剩余时间}
+    std::vector<std::string> aegis;
+    std::vector<std::unique_ptr<act>> actions_;
+    std::unordered_map<std::string, std::pair<int, int>> buffs_;
 
 public:
     character();
@@ -77,22 +71,22 @@ public:
     void set_name(std::string name);
     bool is_alive() const override;
     void take_damage(int damage) override;
-    void attack(entity& target) override;   // 保留用于评分系统
+    void attack(entity& target) override;
     void setbasicattr();
     void outputattr();
-    void setaegis(); //设置加护
+    void setaegis();
     bool has_aegis() const { return !aegis.empty(); }
     const std::vector<std::string>& get_aegis() const { return aegis; }
-    // Buff系统接口
-    void add_buff(const std::string& buff_name, int effect, int duration);  // 添加buff
-    void apply_buffs();                                                      // 应用buff效果（减伤、毒伤等）
-    void update_buffs();                                                     // 更新buff持续时间（每回合递减）
-    // 新行为系统
-    void init_default_actions();            // 初始化默认行为
-    bool do_action(FightContext& ctx);            // 执行回合行为，返回是否执行了动作
+
+    void add_buff(const std::string& buff_name, int effect, int duration);
+    void apply_buffs();
+    void update_buffs();
+
+    void init_default_actions();
+    bool do_action(FightContext& ctx);
+    std::vector<std::unique_ptr<act>>& get_actions() { return actions_; }
 };
 
-// 队伍类
 class Team {
 private:
     std::string name_;
@@ -113,20 +107,17 @@ public:
     void set_name(std::string name);
 };
 
-// 战斗上下文（传递给行为）
 struct FightContext {
-    std::vector<character*> enemies;   // 敌方存活角色列表
-    std::vector<character*> allies;    // 我方存活角色列表
-    std::unordered_map<character*, const Team*> char_team; // 角色 -> 所属队伍
-    // 可扩展其他信息
+    std::vector<character*> enemies;
+    std::vector<character*> allies;
+    std::unordered_map<character*, const Team*> char_team;
+    std::vector<std::unique_ptr<character>>* summoned = nullptr;
 };
 
-// 战斗组件类
 class FightComponent {
 public:
     void add_team(Team& team);
     void start();
-
 
 private:
     struct ActionNode {
@@ -139,6 +130,7 @@ private:
 
     std::vector<std::reference_wrapper<Team>> teams_;
     std::priority_queue<ActionNode> queue_;
+    std::vector<std::unique_ptr<character>> summoned_characters_;
     bool finished_ = false;
     const Team* winner_ = nullptr;
 
@@ -146,7 +138,24 @@ private:
     void process_turn();
     void recover_ap();
     void check_win_condition();
-    const Team* get_team_of(const character& c) const;  // 辅助函数
+    const Team* get_team_of(const character& c) const;
 };
 
-#endif // ENTITY_H_
+// ==================== 角色导入系统 ====================
+struct ImportedCharacterData {
+    std::string name;
+    std::unordered_map<std::string, int> attributes;
+};
+
+extern std::unordered_map<std::string, ImportedCharacterData> imported_characters;
+
+// 从 JSON 文件导入角色数据
+bool import_characters_from_json(const std::string& json_file_path);
+
+// 检查是否有已导入的角色数据
+bool has_imported_character(const std::string& char_id);
+
+// 获取已导入的角色数据
+const ImportedCharacterData* get_imported_character(const std::string& char_id);
+
+#endif

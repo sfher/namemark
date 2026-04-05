@@ -15,6 +15,17 @@
 
 class character;
 struct FightContext;
+//索敌
+enum class TargetType {
+    SINGLE_ENEMY_LOWEST_HP,   // 单体敌人：最低HP
+    SINGLE_ENEMY_RANDOM,      // 单体敌人：随机
+    SINGLE_ENEMY_HIGHEST_ATK, // 单体敌人：最高攻击力
+    SINGLE_ALLY_LOWEST_HP,    // 单体友方：最低HP
+    SINGLE_ALLY_SELF,         // 自身
+    ALL_ENEMIES,              // 全体敌人
+    ALL_ALLIES,               // 全体友方
+    NONE                      // 无目标（如加速术）
+};
 
 // 行为基类
 class act {
@@ -22,7 +33,7 @@ protected:
     std::unordered_map<std::string, int> consume_;   // 消耗属性映射
     int probability_;                                // 成功率（0-100）
     std::string name_;                               // 行为名称
-
+    TargetType target_type_ = TargetType::SINGLE_ENEMY_LOWEST_HP; // 默认策略
     bool hasSufficientResources(const character* c) const;
     bool checkProbability() const;
 
@@ -35,6 +46,12 @@ public:
 
     void set_consume(const std::string& name, int value) { consume_[name] = value; }
     std::string get_name() const { return name_; }
+
+    void set_target_type(TargetType type) { target_type_ = type; }  //索敌
+    TargetType get_target_type() const { return target_type_; }
+
+	std::unordered_map<std::string, int> get_consume() const { return consume_; }
+    std::vector<character*> get_targets(const FightContext& ctx, character* caster) const;
 };
 
 //技能工厂
@@ -82,6 +99,13 @@ public:
 class MagicMissile : public act {
 public:
     MagicMissile();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+// 召唤幻影
+class SummonPhantom : public act {
+public:
+    SummonPhantom();
     bool can_execute(const character* c, const FightContext& ctx) const override;
     bool execute(character* c, FightContext& ctx) override;
 };
@@ -139,6 +163,22 @@ public:
     LightningChain();
     bool can_execute(const character* c, const FightContext& ctx) const override;
     bool execute(character* c, FightContext& ctx) override;
+};
+
+//==========稀有技能==============
+//流星撞击
+class MeteorStrike : public act {
+public:
+    MeteorStrike();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+	bool execute(character* c, FightContext& ctx) override;
+};
+//虚爆
+class VoidExplosion : public act {
+    public:
+    VoidExplosion();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+	bool execute(character* c, FightContext& ctx) override;
 };
 
 // 暴击判定器

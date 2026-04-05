@@ -5,6 +5,8 @@
 #include <random>
 #include <chrono>
 #include <climits>
+#include <fstream>
+#include <algorithm>
 
 using namespace customio;
 
@@ -23,6 +25,24 @@ character::character() {
 }
 
 character::character(std::string name) : name_(name) {
+    // 检查是否使用导入的角色模板 [:id]
+    if (name.length() > 4 && name[0] == '[' && name[1] == ':' && name[name.length() - 1] == ']') {
+        std::string char_id = name.substr(2, name.length() - 3);
+        const ImportedCharacterData* data = get_imported_character(char_id);
+        if (data) {
+            name_ = data->name;
+            SetRule(SUMMON_BASIC_ATTR, false);
+            SetRule(SHOW_ATTRIBUTES, true);
+            
+            // 应用导入的属性
+            for (const auto& pair : data->attributes) {
+                setattribute(pair.first, pair.second);
+            }
+            init_default_actions();
+            return;
+        }
+    }
+    
     SetRule(SUMMON_BASIC_ATTR, true);
     SetRule(SHOW_ATTRIBUTES, true);
     setbasicattr();
@@ -36,23 +56,31 @@ void character::setaegis() {    //设置加护
         setattribute("MP", 0);
         setattribute("ATK", get_attribute("ATK") + 20);
         setattribute("CRIT", get_attribute("CRIT") + 50);
-        setattribute("CRIT_D", get_attribute("CRIT_D") - 20);
+        setattribute("CRIT_D", get_attribute("CRIT_D") - 50);
         setattribute("DEF", get_attribute("DEF") + 20);
         setattribute("HP", std::min(get_attribute("HP") + 40, 220));
-		setattribute("MAX_HP", std::min(get_attribute("MAX_HP") + 40, 220));
+        setattribute("MAX_HP", std::min(get_attribute("MAX_HP") + 40, 220));
         setattribute("SPD", std::min(get_attribute("SPD") * 4, 80)); //极高的速度加成，但有上限
         setattribute("C_AP", std::min(get_attribute("C_AP") + 60, 80)); //增加初始行动点，但有上限
-		buffs_["DEFENSE_BUFF"] = { 40, 99 }; //获得防御增益buff，效果40%，持续99回合（相当于永久）
+        buffs_["DEFENSE_BUFF"] = { 40, 999 }; //获得防御增益buff，效果40%，持续99回合（相当于永久）
     }
-        else if (hashcode % 10000 == 1) {
-            aegis.push_back("Guardian"); //守护者
-            setattribute("MATK", get_attribute("MATK") - 10);
-            setattribute("ATK", get_attribute("ATK") - 10);
-            setattribute("DEF", get_attribute("DEF") + 30);
-            setattribute("HP", std::min(get_attribute("HP") + 50, 250));
-            setattribute("MAX_HP", std::min(get_attribute("MAX_HP") + 50, 250));
-            buffs_["DEFENSE_BUFF"] = { 93, 99 }; //获得防御增益buff
-         }
+    else if (hashcode % 10000 == 1) {
+        aegis.push_back("Guardian"); //守护者
+        setattribute("MATK", get_attribute("MATK") - 5);
+        setattribute("ATK", get_attribute("ATK") - 5);
+        setattribute("DEF", get_attribute("DEF") + 30);
+        setattribute("HP", 250);
+        setattribute("MAX_HP", 250);
+        buffs_["DEFENSE_BUFF"] = { 93, 999 }; //获得防御增益buff
+    }
+    else if (hashcode % 10000 == 2) {
+        aegis.push_back("Aeternus");
+        setattribute("MATK", 50);
+		setattribute("MP", 999); //ai懂我
+        setattribute("SPD", std::min(get_attribute("SPD") * 2, 50)); //极高的速度加成
+        setattribute("C_AP", std::min(get_attribute("C_AP") + 40, 60)); //增加初始行动点
+        buffs_["DEFENSE_BUFF"] = { 20, 999 }; //获得防御增益buff
+    }
 }
 
 void character::init_default_actions() {
@@ -149,19 +177,19 @@ bool character::is_alive() const {
 
 void character::take_damage(int damage) {
     if (damage <= 0) return;
-    
+
     // 检查buff系统中的防御增益
     int def_buff = 0;
     auto buff_it = buffs_.find("DEFENSE_BUFF");
     if (buff_it != buffs_.end()) {
         def_buff = buff_it->second.first;
     }
-    
+
     // 如果buff系统中没有，检查属性（向后兼容）
     if (def_buff == 0) {
         def_buff = get_attribute("DEFENSE_BUFF");
     }
-    
+
     // 应用防御 buff（简单实现）
     if (def_buff > 0) {
         damage = damage * (100 - def_buff) / 100;
@@ -171,7 +199,7 @@ void character::take_damage(int damage) {
             setattribute("DEFENSE_BUFF", 0, false);
         }
     }
-    
+
     int current_hp = get_attribute("HP");
     int new_hp = current_hp - damage;
     setattribute("HP", std::max(0, new_hp));
@@ -255,9 +283,9 @@ void character::outputattr() {
         std::cout << std::setw(10) << std::left << attr.first << ": " << attr.second.first << std::endl;
     }
     //输出加护
-    if(!aegis.empty()) for (const auto& a : aegis) {
+    if (!aegis.empty()) for (const auto& a : aegis) {
         std::cout << textcolor(color::magenta) << "Aegis: " << a << resetcolor() << std::endl;
-	}
+    }
 }
 
 character::~character() = default;
@@ -266,9 +294,9 @@ character::~character() = default;
 
 void character::add_buff(const std::string& buff_name, int effect, int duration) {
     // 如果buff已存在，更新其效果和时间
-    buffs_[buff_name] = { effect, duration };
+    if(buffs_[buff_name].second == 0) buffs_[buff_name] = { effect, duration };
     if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::magenta) << name_ << " 获得了 " << buff_name 
+        std::cout << textcolor(color::magenta) << name_ << " 获得了 " << buff_name
             << " (效果: " << effect << ", 持续: " << duration << " 回合)" << resetcolor() << std::endl;
     }
 }
@@ -288,7 +316,7 @@ void character::apply_buffs() {
             // 中毒：每回合损失HP
             int damage = effect;
             if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::green) << name_ << " 受到中毒伤害: " 
+                std::cout << textcolor(color::green) << name_ << " 受到中毒伤害: "
                     << damage << resetcolor() << std::endl;
             }
             // 直接扣血（不走take_damage以避免防御buff干扰）
@@ -296,29 +324,29 @@ void character::apply_buffs() {
             setattribute("HP", std::max(0, current_hp - damage), false);
             if (get_attribute("HP") == 0 && is_alive() == false) {
                 if (!GetRule(BATTLE_WITHOUT_OUTPUT))
-                    std::cout << textcolor(color::magenta) << bold() << name_ 
-                        << " 因中毒而被击败了！" << resetcolor() << std::endl;
+                    std::cout << textcolor(color::magenta) << bold() << name_
+                    << " 因中毒而被击败了！" << resetcolor() << std::endl;
             }
         }
         else if (buff_name == "BURN") {
             // 燃烧：每回合损失HP（比中毒伤害更高）
             int damage = effect;
             if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::red) << name_ << " 受到燃烧伤害: " 
+                std::cout << textcolor(color::red) << name_ << " 受到燃烧伤害: "
                     << damage << resetcolor() << std::endl;
             }
             int current_hp = get_attribute("HP");
             setattribute("HP", std::max(0, current_hp - damage), false);
             if (get_attribute("HP") == 0 && is_alive() == false) {
                 if (!GetRule(BATTLE_WITHOUT_OUTPUT))
-                    std::cout << textcolor(color::magenta) << bold() << name_ 
-                        << " 因燃烧而被击败了！" << resetcolor() << std::endl;
+                    std::cout << textcolor(color::magenta) << bold() << name_
+                    << " 因燃烧而被击败了！" << resetcolor() << std::endl;
             }
         }
         else if (buff_name == "ATTACK_BUFF") {
             // 攻击增益：在属性计算中已生效（需在技能中使用）
             if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::yellow) << name_ 
+                std::cout << textcolor(color::yellow) << name_
                     << " 的攻击力提升！" << resetcolor() << std::endl;
             }
         }
@@ -328,7 +356,7 @@ void character::apply_buffs() {
             int current_ap = get_attribute("C_AP");
             setattribute("C_AP", current_ap + bonus_ap, false);
             if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::cyan) << name_ 
+                std::cout << textcolor(color::cyan) << name_
                     << " 获得 " << bonus_ap << " 点额外行动点！" << resetcolor() << std::endl;
             }
         }
@@ -337,7 +365,7 @@ void character::apply_buffs() {
 
 void character::update_buffs() {
     std::vector<std::string> expired_buffs;
-    
+
     // 更新所有buff的持续时间
     for (auto& pair : buffs_) {
         pair.second.second--;  // 减少持续时间
@@ -350,7 +378,7 @@ void character::update_buffs() {
     for (const auto& buff_name : expired_buffs) {
         buffs_.erase(buff_name);
         if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::cyan) << name_ << " 的 " << buff_name 
+            std::cout << textcolor(color::cyan) << name_ << " 的 " << buff_name
                 << " 效果消失了。" << resetcolor() << std::endl;
         }
     }
@@ -417,6 +445,7 @@ void FightComponent::add_team(Team& team) {
 }
 
 void FightComponent::start() { //开始游戏~
+    summoned_characters_.clear();
     build_queue();
     // Safety: guard against extremely long/ infinite battles by limiting turns
     int turn_count = 0;
@@ -477,6 +506,7 @@ void FightComponent::process_turn() {
 
     // 构建战斗上下文（同现有代码）
     FightContext ctx;
+    ctx.summoned = &summoned_characters_;
     const Team* actor_team = get_team_of(*top.actor);
     if (actor_team) {
         for (const auto& team_ref : teams_) {
@@ -495,12 +525,6 @@ void FightComponent::process_turn() {
         }
     }
 
-    // 执行行为
-    // 在详细模式下输出当前行动者（帮助定位卡住）
-    if (!top.actor->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::white) << "[TURN] " << top.actor->get_name()
-            << "  AP=" << top.actor->get_attribute("C_AP") << resetcolor() << std::endl;
-    }
 
     // 应用buff效果（在该角色行动前）
     top.actor->apply_buffs();
@@ -563,6 +587,143 @@ const Team* FightComponent::get_team_of(const character& c) const {
         for (const auto& ref : team.get_members()) {
             if (&ref.get() == &c) return &team;
         }
+    }
+    return nullptr;
+}
+
+// ==================== 角色导入系统实现 ====================
+
+std::unordered_map<std::string, ImportedCharacterData> imported_characters;
+
+bool import_characters_from_json(const std::string& json_file_path) {
+    // 使用 C++ 标准库读取 JSON 文件（手动解析）
+    std::ifstream file(json_file_path, std::ios::binary);
+    if (!file.is_open()) {
+        std::cout << textcolor(color::red) << "错误：无法打开文件 " << json_file_path << resetcolor() << std::endl;
+        return false;
+    }
+
+    // 以二进制模式读取并处理 UTF-8 BOM
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    // 删除 UTF-8 BOM（如果存在）
+    if (content.size() >= 3 && 
+        (unsigned char)content[0] == 0xEF && 
+        (unsigned char)content[1] == 0xBB && 
+        (unsigned char)content[2] == 0xBF) {
+        content = content.substr(3);
+    }
+
+    // 简单的 JSON 解析（假设格式为 {"characters": [{"id": "xxx", "name": "yyy", "HP": 100, ...}]}）
+    // 更简单的方式：使用正则表达式或字符串查找
+    imported_characters.clear();
+
+    // 查找 "characters" 数组
+    size_t char_start = content.find("\"characters\"");
+    if (char_start == std::string::npos) {
+        std::cout << textcolor(color::red) << "错误：JSON 文件中未找到 characters 字段" << resetcolor() << std::endl;
+        return false;
+    }
+
+    size_t array_start = content.find('[', char_start);
+    size_t array_end = content.find(']', array_start);
+    if (array_start == std::string::npos || array_end == std::string::npos) {
+        std::cout << textcolor(color::red) << "错误：JSON 格式错误" << resetcolor() << std::endl;
+        return false;
+    }
+
+    std::string array_content = content.substr(array_start + 1, array_end - array_start - 1);
+
+    // 分割每个对象
+    size_t obj_start = 0;
+    int count = 0;
+    while (true) {
+        obj_start = array_content.find('{', obj_start);
+        if (obj_start == std::string::npos) break;
+
+        size_t obj_end = array_content.find('}', obj_start);
+        if (obj_end == std::string::npos) break;
+
+        std::string obj_str = array_content.substr(obj_start + 1, obj_end - obj_start - 1);
+
+        // 解析对象
+        ImportedCharacterData data;
+        std::string id;
+
+        // 查找 "id" 字段
+        size_t id_pos = obj_str.find("\"id\"");
+        if (id_pos != std::string::npos) {
+            size_t colon_pos = obj_str.find(':', id_pos);
+            size_t quote_start = obj_str.find('\"', colon_pos);
+            size_t quote_end = obj_str.find('\"', quote_start + 1);
+            if (quote_start != std::string::npos && quote_end != std::string::npos) {
+                id = obj_str.substr(quote_start + 1, quote_end - quote_start - 1);
+            }
+        }
+
+        // 查找 "name" 字段
+        size_t name_pos = obj_str.find("\"name\"");
+        if (name_pos != std::string::npos) {
+            size_t colon_pos = obj_str.find(':', name_pos);
+            size_t quote_start = obj_str.find('\"', colon_pos);
+            size_t quote_end = obj_str.find('\"', quote_start + 1);
+            if (quote_start != std::string::npos && quote_end != std::string::npos) {
+                data.name = obj_str.substr(quote_start + 1, quote_end - quote_start - 1);
+            }
+        }
+
+        // 查找属性字段（HP, MP, ATK, DEF, MATK, SPD, CRIT, CRIT_D, C_AP）
+        std::vector<std::string> attrs = {"HP", "MP", "ATK", "DEF", "MATK", "SPD", "CRIT", "CRIT_D", "C_AP"};
+        for (const auto& attr : attrs) {
+            std::string search_str = "\"" + attr + "\"";
+            size_t attr_pos = obj_str.find(search_str);
+            if (attr_pos != std::string::npos) {
+                size_t colon_pos = obj_str.find(':', attr_pos);
+                size_t end_pos = obj_str.find(',', colon_pos);
+                if (end_pos == std::string::npos) {
+                    end_pos = obj_str.find('}', colon_pos);
+                }
+                std::string value_str = obj_str.substr(colon_pos + 1, end_pos - colon_pos - 1);
+                
+                // 清除空白
+                value_str.erase(remove_if(value_str.begin(), value_str.end(), isspace), value_str.end());
+                
+                try {
+                    int value = std::stoi(value_str);
+                    data.attributes[attr] = value;
+                } catch (...) {
+                    // 解析失败，跳过
+                }
+            }
+        }
+
+        if (!id.empty()) {
+            imported_characters[id] = data;
+            std::cout << textcolor(color::green) << "已导入角色: [" << id << "] " << data.name << resetcolor() << std::endl;
+            count++;
+        }
+
+        obj_start = obj_end + 1;
+    }
+
+    if (count == 0) {
+        std::cout << textcolor(color::yellow) << "警告：未导入任何角色" << resetcolor() << std::endl;
+        return false;
+    }
+
+    std::cout << textcolor(color::green) << "成功导入 " << count << " 个角色" << resetcolor() << std::endl;
+    return true;
+}
+
+bool has_imported_character(const std::string& char_id) {
+    return imported_characters.find(char_id) != imported_characters.end();
+}
+
+const ImportedCharacterData* get_imported_character(const std::string& char_id) {
+    auto it = imported_characters.find(char_id);
+    if (it != imported_characters.end()) {
+        return &it->second;
     }
     return nullptr;
 }

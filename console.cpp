@@ -126,8 +126,8 @@ BattleResult run_1vN_battle(const std::string& char_name, int enemy_count) {
 struct BenchmarkReport {
     std::string char_name;
     double win_rate_1v1;   // 对1个标准敌人胜率
-    double win_rate_1v2;   // 对2个标准敌人胜率
-    double win_rate_1v4;   // 对4个标准敌人胜率
+    double win_rate_1v3;   // 对2个标准敌人胜率
+    double win_rate_1v7;   // 对4个标准敌人胜率
     double final_score;
     std::string grade;
     int static_score;
@@ -148,19 +148,19 @@ BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int b
 
     wins = 0;
     for (int i = 0; i < battles_per_test; ++i) {
-        auto res = run_1vN_battle(char_name, 2);
+        auto res = run_1vN_battle(char_name, 3);
         if (res.win) wins++;
     }
-    report.win_rate_1v2 = (double)wins / battles_per_test * 100.0;
+    report.win_rate_1v3 = (double)wins / battles_per_test * 100.0;
 
     wins = 0;
     for (int i = 0; i < battles_per_test; ++i) {
-        auto res = run_1vN_battle(char_name, 4);
+        auto res = run_1vN_battle(char_name, 7);
         if (res.win) wins++;
     }
-    report.win_rate_1v4 = (double)wins / battles_per_test * 100.0;
+    report.win_rate_1v7 = (double)wins / battles_per_test * 100.0;
 
-    report.final_score = report.win_rate_1v1 * 0.4 + report.win_rate_1v2 * 0.4 + report.win_rate_1v4 * 0.2;
+    report.final_score = report.win_rate_1v1 * 0.6 + report.win_rate_1v3 * 0.3 + report.win_rate_1v7 * 0.1;
 
     if (report.final_score >= 80) report.grade = "S";
     else if (report.final_score >= 60) report.grade = "A";
@@ -198,7 +198,7 @@ SimulateResult run_simulation(const std::vector<std::string>& hero_names,
     int battle_count, bool show_fightlog) {
     SimulateResult result;
     for (int i = 0; i < battle_count; ++i) {
-        Team heroTeam("英雄队");
+        Team heroTeam("HeroTeam");
         std::vector<std::unique_ptr<character>> hero_chars;
         for (const auto& name : hero_names) {
             auto ch = std::make_unique<character>(name);
@@ -208,7 +208,7 @@ SimulateResult run_simulation(const std::vector<std::string>& hero_names,
             hero_chars.push_back(std::move(ch));
         }
 
-        Team monsterTeam("怪物队");
+        Team monsterTeam("MonsterTeam");
         std::vector<std::unique_ptr<character>> monster_chars;
         for (const auto& name : monster_names) {
             auto ch = std::make_unique<character>(name);
@@ -243,21 +243,22 @@ std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
-// ========== 调试控制台 ==========
+// ========== Debug Console ==========
 void debug_console() {
     std::cout << bold() << textcolor(color::green)
-        << "\n===== 调试控制台已启动 =====" << resetcolor() << std::endl;
-    std::cout << "命令列表：" << std::endl;
-    std::cout << "  @<队名>                - 创建队伍（如 @英雄队）" << std::endl;
-    std::cout << "  <角色名> @<队名>       - 创建角色并加入指定队伍" << std::endl;
-    std::cout << "  /fight                 - 开始战斗（所有队伍对战）" << std::endl;
-    std::cout << "  /test <角色名>         - 查看角色属性（基于名字哈希）" << std::endl;
-    std::cout << "  /score <角色名>        - 评估角色强度（标准敌人数值评分，耗时较长）" << std::endl;
-    std::cout << "  /fastscore [角色名]    - 快速评分（静态属性）。无参数则进入交互模式，输入名字即可评分，/end返回" << std::endl;
-    std::cout << "  /simulate <英雄列表> vs <怪物列表> [次数] - 批量模拟战斗" << std::endl;
-    std::cout << "  /find寻找带有加护的名字" << std::endl;
-    std::cout << "  /end                   - 退出调试控制台" << std::endl;
-    std::cout << "提示：角色名不能包含空格，队伍名需以@开头" << std::endl;
+        << "\n===== Debug Console Started =====" << resetcolor() << std::endl;
+    std::cout << "Commands:" << std::endl;
+    std::cout << "  @<TeamName>            - Create a team (e.g. @HeroTeam)" << std::endl;
+    std::cout << "  <CharName> @<TeamName> - Create character and add to team" << std::endl;
+    std::cout << "  [:ID] @<TeamName>      - Use imported character template to create character" << std::endl;
+    std::cout << "  /fight                 - Start battle (all teams)" << std::endl;
+    std::cout << "  /test <CharName>       - View character attributes" << std::endl;
+    std::cout << "  /ftest [CharName]      - Quick score (static attributes)" << std::endl;
+    std::cout << "  /import <filepath>     - Import characters from JSON file" << std::endl;
+    std::cout << "  /simulate <list> vs <list> [times] - Batch battle simulations" << std::endl;
+    std::cout << "  /find                  - Find characters with aegis" << std::endl;
+    std::cout << "  /end                   - Exit debug console" << std::endl;
+    std::cout << "Tip: Character names cannot contain spaces, team names need @prefix, use [:ID] format for imported characters" << std::endl;
     std::cout << "----------------------------------------" << std::endl;
 
     std::string line;
@@ -269,58 +270,58 @@ void debug_console() {
         if (line.empty()) continue;
 
         if (line == "/end") {
-            std::cout << "退出调试控制台。" << std::endl;
+            std::cout << "Exiting debug console." << std::endl;
             break;
         }
 
-        // 创建队伍
+        // Create team
         if (line[0] == '@') {
             std::string team_name = line.substr(1);
             if (debug_teams.find(team_name) != debug_teams.end()) {
-                std::cout << "队伍 " << team_name << " 已存在，无法重复创建。" << std::endl;
+                std::cout << "Team " << team_name << " already exists." << std::endl;
             }
             else {
                 auto team = std::make_unique<Team>(team_name);
                 team->set_name(team_name);
                 debug_teams[team_name] = std::move(team);
-                std::cout << "队伍 [" << team_name << "] 创建成功。" << std::endl;
+                std::cout << "Team [" << team_name << "] created successfully." << std::endl;
             }
             current_team_name = team_name;
             continue;
         }
 
-        // 创建角色并加入队伍（显式指定队伍）
+        // Create and add character to team (explicit team assignment)
         size_t at_pos = line.find('@');
         if (at_pos != std::string::npos) {
             std::string char_name = trim(line.substr(0, at_pos));
             std::string team_name = trim(line.substr(at_pos + 1));
             if (char_name.empty() || team_name.empty()) {
-                std::cout << "格式错误：请使用 \"角色名 @队名\"。" << std::endl;
+                std::cout << "Format error: use \"CharName @TeamName\"." << std::endl;
                 continue;
             }
             auto it = debug_teams.find(team_name);
             if (it == debug_teams.end()) {
-                std::cout << "队伍 " << team_name << " 不存在，请先创建队伍（@" << team_name << "）。" << std::endl;
+                std::cout << "Team " << team_name << " does not exist, create team first (@" << team_name << ")." << std::endl;
                 continue;
             }
             auto ch = std::make_unique<character>(char_name);
             ch->SetRule(SHOW_ATTRIBUTES, false);
             it->second->add_character(*ch);
             debug_chars.push_back(std::move(ch));
-            std::cout << "角色 [" << char_name << "] 已加入队伍 [" << team_name << "]。" << std::endl;
+            std::cout << "Character [" << char_name << "] added to team [" << team_name << "]." << std::endl;
             continue;
         }
 
-        // 如果以普通字符开头且不是命令，则加入当前活跃队伍
+        // If starts with normal character and not a command, add to current active team
         if (!line.empty() && line[0] != '/') {
             std::string char_name = line;
             if (current_team_name.empty()) {
-                std::cout << "没有活跃队伍，无法将角色加入。请先创建队伍（例如：@队伍名）或使用 \"角色名 @队伍名\"。" << std::endl;
+                std::cout << "No active team, cannot add character. Create team first (e.g. @TeamName) or use \"CharName @TeamName\"." << std::endl;
                 continue;
             }
             auto it = debug_teams.find(current_team_name);
             if (it == debug_teams.end()) {
-                std::cout << "当前活跃队伍不存在，请重新创建队伍（@" << current_team_name << "）。" << std::endl;
+                std::cout << "Current active team does not exist, recreate team (@" << current_team_name << ")." << std::endl;
                 current_team_name.clear();
                 continue;
             }
@@ -328,14 +329,14 @@ void debug_console() {
             ch->SetRule(SHOW_ATTRIBUTES, false);
             it->second->add_character(*ch);
             debug_chars.push_back(std::move(ch));
-            std::cout << "角色 [" << char_name << "] 已加入队伍 [" << current_team_name << "]。" << std::endl;
+            std::cout << "Character [" << char_name << "] added to team [" << current_team_name << "]." << std::endl;
             continue;
         }
 
-        // 战斗（使用当前已创建的所有队伍）
+        // Battle (using all currently created teams)
         if (line == "/fight") {
             if (debug_teams.empty()) {
-                std::cout << "没有队伍，无法战斗。请先创建队伍并加入角色。" << std::endl;
+                std::cout << "No teams, cannot start battle. Create team and add characters first." << std::endl;
                 continue;
             }
             bool has_character = false;
@@ -346,7 +347,7 @@ void debug_console() {
                 }
             }
             if (!has_character) {
-                std::cout << "所有队伍都没有角色，请先添加角色。" << std::endl;
+                std::cout << "All teams have no characters, add characters first." << std::endl;
                 continue;
             }
 
@@ -354,55 +355,43 @@ void debug_console() {
             for (auto& pair : debug_teams) {
                 fight.add_team(*pair.second);
             }
-            std::cout << "\n========== 战斗开始 ==========" << std::endl;
+            std::cout << "\n========== Battle Start ==========" << std::endl;
             fight.start();
-            std::cout << "========== 战斗结束 ==========\n" << std::endl;
+            std::cout << "========== Battle End ==========\n" << std::endl;
 
             debug_teams.clear();
             debug_chars.clear();
             current_team_name.clear();
-            std::cout << "所有队伍和角色已清空。" << std::endl;
+            std::cout << "All teams and characters cleared." << std::endl;
             continue;
         }
 
-        // 测试角色属性
+        // Test character attributes
         if (line.substr(0, 5) == "/test") {
             std::string char_name = trim(line.substr(5));
             if (char_name.empty()) {
-                std::cout << "用法：/test <角色名>" << std::endl;
+                std::cout << "Usage: /test <CharName>" << std::endl;
                 continue;
             }
             character tmp(char_name);
             tmp.SetRule(SHOW_ATTRIBUTES, true);
             tmp.outputattr();
-            continue;
-        }
-
-        // 角色评分（精确，战斗）
-        if (line.substr(0, 6) == "/score") {
-            std::string char_name = trim(line.substr(6));
-            if (char_name.empty()) {
-                std::cout << "用法：/score <角色名>" << std::endl;
-                continue;
-            }
-            std::cout << "正在评估角色 " << char_name << "（标准敌人，每项30场）..." << std::endl;
+            std::cout << "Evaluating character " << char_name << " (standard enemy, 30 battles each test)..." << std::endl;
             BenchmarkReport report = evaluate_character_benchmark(char_name, 30);
-
-            std::cout << "\n========== 角色强度报告 ==========" << std::endl;
-            std::cout << "角色名称: " << char_name << std::endl;
-            std::cout << "最终评级: " << report.grade << std::endl;
-            std::cout << "综合评分: " << std::fixed << std::setprecision(1) << report.final_score << " / 100" << std::endl;
-            std::cout << "1v1 胜率 (30场): " << report.win_rate_1v1 << "%" << std::endl;
-            std::cout << "1v2 胜率 (30场): " << report.win_rate_1v2 << "%" << std::endl;
-            std::cout << "1v4 胜率 (30场): " << report.win_rate_1v4 << "%" << std::endl;
-            std::cout << "静态属性评分: " << report.static_score << std::endl;
-            std::cout << "===================================\n" << std::endl;
+            std::cout << "\n========== Character Strength Report ==========" << std::endl;
+            std::cout << "Character: " << char_name << std::endl;
+            std::cout << "Grade: " << report.grade << std::endl;
+            std::cout << "Overall Score: " << std::fixed << std::setprecision(1) << report.final_score << " / 100" << std::endl;
+            std::cout << "1v1 Win Rate (30): " << report.win_rate_1v1 << "%" << std::endl;
+            std::cout << "1v3 Win Rate (30): " << report.win_rate_1v3 << "%" << std::endl;
+            std::cout << "1v7 Win Rate (30): " << report.win_rate_1v7 << "%" << std::endl;
+            std::cout << "Static Attribute Score: " << report.static_score << std::endl;
+            std::cout << "==============================================\n" << std::endl;
             continue;
         }
-
         // 快速评分（静态属性）
-        if (line.substr(0, 10) == "/fastscore") {
-            std::string args = trim(line.substr(10));
+        if (line.substr(0, 6) == "/ftest") {
+            std::string args = trim(line.substr(6));
             if (!args.empty()) {
                 // 有参数：单次评分
                 double score = get_fast_score(args);
@@ -425,18 +414,18 @@ void debug_console() {
             continue;
         }
 
-        // 批量模拟战斗（静默）
+        // Batch battle simulation
         if (line.substr(0, 9) == "/simulate") {
             std::string args = trim(line.substr(9));
             if (args.empty()) {
-                std::cout << "用法：/simulate 英雄名1,英雄名2 vs 怪物名1,怪物名2 [次数]" << std::endl;
-                std::cout << "示例：/simulate 亚瑟,兰斯洛特 vs 哥布林,兽人 100" << std::endl;
+                std::cout << "Usage: /simulate HeroName1,HeroName2 vs MonsterName1,MonsterName2 [times]" << std::endl;
+                std::cout << "Example: /simulate Arthur,Lancelot vs Goblin,Orc 100" << std::endl;
                 continue;
             }
 
             size_t vs_pos = args.find("vs");
             if (vs_pos == std::string::npos) {
-                std::cout << "错误：缺少 vs 分隔符" << std::endl;
+                std::cout << "Error: missing vs separator" << std::endl;
                 continue;
             }
 
@@ -460,31 +449,31 @@ void debug_console() {
             std::vector<std::string> monster_names = parse_name_list(monster_part);
 
             if (hero_names.empty() || monster_names.empty()) {
-                std::cout << "错误：英雄或怪物列表为空" << std::endl;
+                std::cout << "Error: hero or monster list is empty" << std::endl;
                 continue;
             }
 
-            std::cout << "开始模拟战斗：" << battle_count << " 场" << std::endl;
-            std::cout << "英雄队：" << hero_part << std::endl;
-            std::cout << "怪物队：" << monster_part << std::endl;
-            std::cout << "请稍候..." << std::endl;
+            std::cout << "Starting simulation: " << battle_count << " battles" << std::endl;
+            std::cout << "Heroes: " << hero_part << std::endl;
+            std::cout << "Monsters: " << monster_part << std::endl;
+            std::cout << "Please wait..." << std::endl;
 
             auto start = std::chrono::steady_clock::now();
             SimulateResult result = run_simulation(hero_names, monster_names, battle_count, false);
             auto end = std::chrono::steady_clock::now();
             double elapsed = std::chrono::duration<double>(end - start).count();
 
-            std::cout << "\n========== 模拟结果 ==========" << std::endl;
-            std::cout << "总场次: " << battle_count << std::endl;
-            std::cout << "英雄胜场: " << result.hero_wins << " (" << std::fixed << std::setprecision(1) << result.hero_win_rate << "%)" << std::endl;
-            std::cout << "怪物胜场: " << result.monster_wins << " (" << (100.0 - result.hero_win_rate) << "%)" << std::endl;
-            std::cout << "平局: " << result.draws << std::endl;
-            std::cout << "耗时: " << elapsed << " 秒" << std::endl;
-            std::cout << "================================\n" << std::endl;
+            std::cout << "\n========== Simulation Results ==========" << std::endl;
+            std::cout << "Total: " << battle_count << std::endl;
+            std::cout << "Heroes Won: " << result.hero_wins << " (" << std::fixed << std::setprecision(1) << result.hero_win_rate << "%)" << std::endl;
+            std::cout << "Monsters Won: " << result.monster_wins << " (" << (100.0 - result.hero_win_rate) << "%)" << std::endl;
+            std::cout << "Draws: " << result.draws << std::endl;
+            std::cout << "Time: " << elapsed << " seconds" << std::endl;
+            std::cout << "========================================\n" << std::endl;
             continue;
         }
 
-        // 批量模拟战斗（显示战斗日志）
+        // Batch battle simulation (show battle log)
         if (line.substr(0, 10) == "/simulatex") {
             std::string args = trim(line.substr(10));
             if (args.empty()) {
@@ -588,7 +577,7 @@ void debug_console() {
             customio::progress_bar bar(count, 50, '=', ' ', true);
 
             for (int i = 0; i < count; ++i) {
-                std::string name = random_string(3, 12);
+                std::string name = random_string(8, 8); // 生成8字符随机名字
                 character tmp(name);
                 tmp.SetRule(SHOW_ATTRIBUTES, false);
                 // 注意：角色构造时会自动调用 setbasicattr() 和 setaegis()，所以可以直接检查
@@ -617,6 +606,21 @@ void debug_console() {
                 }
             }
             std::cout << "==================================\n" << std::endl;
+            continue;
+        }
+
+        // 导入角色        
+        if (line.substr(0, 7) == "/import") {
+            std::string args = trim(line.substr(7));
+            if (args.empty()) {
+                std::cout << "用法：/import <json文件路径>" << std::endl;
+                std::cout << "示例：/import characters.json" << std::endl;
+                continue;
+            }
+            bool success = import_characters_from_json(args);
+            if (success) {
+                std::cout << textcolor(color::green) << "角色导入完成！可使用 [:角色ID] 来调用导入的角色。" << resetcolor() << std::endl;
+            }
             continue;
         }
 
