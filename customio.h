@@ -18,8 +18,32 @@ namespace customio {
 
     // ---------- 颜色 ----------
     enum class color {
-        black, red, green, yellow, blue, magenta, cyan, white, reset
+        black, red, green, yellow, blue, magenta, cyan, white, reset, orange // 注意：color枚举中没有orange，需要映射到yellow或自定义
     };
+
+    struct console_theme {
+        color background;
+        color text;
+        color damage;
+        color heal;
+        color attack;
+        color special;
+        color warning;
+        color info;
+        color error;
+        color prompt;
+        color title;
+    };
+
+    extern const console_theme default_console_theme;
+    extern console_theme current_console_theme;
+
+    struct textcolor_manip;
+    color resolve_text_color(color background, color desired);
+    textcolor_manip adaptive_textcolor(color desired);
+    const console_theme& get_console_theme();
+    void set_console_theme(const console_theme& theme);
+    void apply_console_theme();
 
     struct textcolor_manip { color col; };
     textcolor_manip textcolor(color c);
@@ -107,6 +131,11 @@ namespace customio {
     // ---------- 彩色提示 ----------
     std::string prompt(const std::string& prompt_text, color c = color::reset);
 
+    // ---------- 统一输出 ----------
+    void themed_print(const std::string& text, color fg = color::reset, bool bold = false, bool underline = false, bool italic = false);
+    void themed_println(const std::string& text, color fg = color::reset, bool bold = false, bool underline = false, bool italic = false);
+    void themed_block(const std::string& block_text, color fg = color::reset, bool bold = false);
+
     // ---------- 表格输出 ----------
     void print_table(const std::vector<std::vector<std::string>>& data, bool header = false);
 
@@ -124,6 +153,17 @@ namespace customio {
 
     // ---------- 初始化（Windows启用ANSI）----------
     void init_console();
+
+    // 预设主题声明
+    extern const console_theme light_theme;
+    extern const console_theme dark_theme;
+    extern const console_theme retro_theme;
+    extern const console_theme high_contrast_theme;
+
+    // 主题选择接口
+    void list_available_themes();                  // 列出所有可用主题
+    bool set_theme_by_name(const std::string& theme_name); // 通过名称设置主题
+    void interactive_theme_selector();             // 交互式主题选择菜单
 
 } // namespace customio
 

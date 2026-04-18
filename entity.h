@@ -49,15 +49,15 @@ class Team;
 
 class character : public stereotype {
 private:
-    int calculate_damage(character& target);
-    static std::mt19937& get_random_engine();
+    int calculate_damage(character& target);  // 保留用于评分系统，可废弃
+    static std::mt19937& get_random_engine(); // 保留用于评分系统
 
     std::string name_ = "character";
     int64_t hashcode = 0;
     std::unordered_map<std::string, std::pair<int, bool>> attribute_{};
-    std::vector<std::string> aegis;
-    std::vector<std::unique_ptr<act>> actions_;
-    std::unordered_map<std::string, std::pair<int, int>> buffs_;
+    std::vector<std::string> aegis; //神之庇护
+    std::vector<std::unique_ptr<act>> actions_;  // 行为列表
+    std::unordered_map<std::string, std::pair<int, int>> buffs_; // buff系统: buff名字 -> {效果值, 剩余时间}
 
 public:
     character();
@@ -71,20 +71,22 @@ public:
     void set_name(std::string name);
     bool is_alive() const override;
     void take_damage(int damage) override;
-    void attack(entity& target) override;
+    void attack(entity& target) override;   // 保留用于评分系统
     void setbasicattr();
     void outputattr();
-    void setaegis();
-    bool has_aegis() const { return !aegis.empty(); }
-    const std::vector<std::string>& get_aegis() const { return aegis; }
-
-    void add_buff(const std::string& buff_name, int effect, int duration);
-    void apply_buffs();
-    void update_buffs();
-
-    void init_default_actions();
-    bool do_action(FightContext& ctx);
+    void setaegis(); //设置加护
+    // Buff系统接口
+    void add_buff(const std::string& buff_name, int effect, int duration);  // 添加buff
+    void apply_buffs();                                                      // 应用buff效果（减伤、毒伤等）
+    void update_buffs();                                                     // 更新buff持续时间（每回合递减）
+    // 新行为系统
+    void init_default_actions();            // 初始化默认行为
+    bool do_action(FightContext& ctx);            // 执行回合行为，返回是否执行了动作
+        void add_action(std::unique_ptr<act> action) { actions_.push_back(std::move(action)); }
+        const std::vector<std::unique_ptr<act>>& get_actions() const { return actions_; }
     std::vector<std::unique_ptr<act>>& get_actions() { return actions_; }
+    bool has_aegis() const { return !aegis.empty(); }
+    std::vector<std::string> get_aegis() const { return aegis; }
 };
 
 class Team {
@@ -145,6 +147,7 @@ private:
 struct ImportedCharacterData {
     std::string name;
     std::unordered_map<std::string, int> attributes;
+    std::vector<std::string> actions;  // 行为列表，如果为空则使用预设
 };
 
 extern std::unordered_map<std::string, ImportedCharacterData> imported_characters;

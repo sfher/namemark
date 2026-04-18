@@ -3,15 +3,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <functional> 
-#include <memory>    
+#include <functional>
+#include <memory>
 
-// If a macro named 'act' was defined by some other header it will break
-// using 'act' as a class name (e.g. "std::unique_ptr<act>"). Undefine it
-// here so the class declaration below is not affected.
-#ifdef act
-#undef act
-#endif
+// 不包含 skill_executor.h 和 damage_calculator.h
 
 class character;
 struct FightContext;
@@ -60,6 +55,11 @@ struct SkillInfo {
     int acquire_chance;
     int weight;
     std::function<std::unique_ptr<act>()> factory;
+
+    SkillInfo() = default;
+    SkillInfo(const std::string& n, int chance, int w, std::function<std::unique_ptr<act>()> f)
+        : name(n), acquire_chance(chance), weight(w), factory(std::move(f)) {
+    }
 };
 
 class SkillRegistry {
@@ -175,12 +175,42 @@ public:
 };
 //虚爆
 class VoidExplosion : public act {
-    public:
+public:
     VoidExplosion();
     bool can_execute(const character* c, const FightContext& ctx) const override;
 	bool execute(character* c, FightContext& ctx) override;
 };
 
+// 自愈行为
+class SelfHeal : public act {
+public:
+    SelfHeal();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+// 吸血攻击
+class Lifesteal : public act {
+public: 
+    Lifesteal();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+// 冥想行为
+class Meditate : public act {
+public:
+    Meditate();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+// 虚神召唤
+class VoidGodSummon : public act {
+public:
+    VoidGodSummon();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
 // 暴击判定器
 class CritCalculator {
 public:

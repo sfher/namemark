@@ -30,6 +30,204 @@ namespace customio {
 #endif
     }
 
+    const console_theme default_console_theme = {
+        color::black,   // background
+        color::black,   // text
+        color::red,     // damage
+        color::green,   // heal
+        color::cyan,    // attack
+        color::magenta, // special
+        color::yellow,  // warning
+        color::blue,    // info
+        color::red,     // error
+        color::cyan,    // prompt
+        color::yellow   // title
+    };
+
+    // 由于color没有orange，修正为color::yellow
+    // 修正版：
+    const console_theme light_theme = {
+        color::white,
+        color::black,
+        color::red,
+        color::green,
+        color::blue,
+        color::magenta,
+        color::yellow,
+        color::blue,
+        color::red,
+        color::blue,
+        color::black
+    };
+
+    // 深色背景主题（黑底绿字，经典）
+    const console_theme dark_theme = {
+        color::black,   // background
+        color::green,   // text
+        color::red,     // damage
+        color::green,   // heal
+        color::cyan,    // attack
+        color::magenta, // special
+        color::yellow,  // warning
+        color::cyan,    // info
+        color::red,     // error
+        color::cyan,    // prompt
+        color::yellow   // title
+    };
+
+    // 复古主题（琥珀色风格）
+    const console_theme retro_theme = {
+        color::black,   // background
+        color::yellow,  // text (琥珀色)
+        color::red,     // damage
+        color::green,   // heal
+        color::yellow,  // attack
+        color::magenta, // special
+        color::red,     // warning
+        color::yellow,  // info
+        color::red,     // error
+        color::yellow,  // prompt
+        color::yellow   // title
+    };
+
+    // 高对比度主题（黄底黑字，无障碍）
+    const console_theme high_contrast_theme = {
+        color::yellow,  // background
+        color::black,   // text
+        color::red,     // damage
+        color::green,   // heal
+        color::blue,    // attack
+        color::magenta, // special
+        color::red,     // warning
+        color::blue,    // info
+        color::red,     // error
+        color::blue,    // prompt
+        color::black    // title
+    };
+
+    console_theme current_console_theme = light_theme;
+    // 主题选择接口
+    void list_available_themes();                  // 列出所有可用主题
+    bool set_theme_by_name(const std::string& theme_name); // 通过名称设置主题，返回是否成功
+    void interactive_theme_selector();             // 交互式主题选择菜单
+
+    void list_available_themes() {
+        std::cout << "Available themes:\n"
+            << "  default  - Default dark theme (black bg, white text)\n"
+            << "  light    - Light background (white bg, black text)\n"
+            << "  dark     - Dark green theme (black bg, green text)\n"
+            << "  retro    - Retro amber style (black bg, yellow text)\n"
+            << "  highcontrast - High contrast (yellow bg, black text)\n";
+    }
+
+    bool set_theme_by_name(const std::string& theme_name) {
+        std::string name = theme_name;
+        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+        if (name == "default") {
+            current_console_theme = default_console_theme;
+        }
+        else if (name == "light") {
+            current_console_theme = light_theme;
+        }
+        else if (name == "dark") {
+            current_console_theme = dark_theme;
+        }
+        else if (name == "retro") {
+            current_console_theme = retro_theme;
+        }
+        else if (name == "highcontrast") {
+            current_console_theme = high_contrast_theme;
+        }
+        else {
+            return false;
+        }
+        apply_console_theme();
+        return true;
+    }
+
+    void apply_console_theme() {
+        const auto& theme = current_console_theme;
+        std::cout << background(theme.background) << adaptive_textcolor(theme.text);
+        clear_screen();
+    }
+
+    void themed_print(const std::string& text, color fg, bool bold_flag, bool underline_flag, bool italic_flag) {
+        const auto& theme = current_console_theme;
+        std::cout << background(theme.background);
+        if (bold_flag) std::cout << bold();
+        if (underline_flag) std::cout << underline();
+        if (italic_flag) std::cout << italic();
+        std::cout << adaptive_textcolor(fg) << text;
+        // 重置文本样式，恢复默认文本颜色，保持主题背景色不变
+        std::cout << "\033[22m\033[24m\033[23m" << adaptive_textcolor(theme.text);
+    }
+
+    void themed_println(const std::string& text, color fg, bool bold_flag, bool underline_flag, bool italic_flag) {
+        themed_print(text, fg, bold_flag, underline_flag, italic_flag);
+        std::cout << std::endl;
+    }
+
+    void themed_block(const std::string& block_text, color fg, bool bold_flag) {
+        std::stringstream ss(block_text);
+        std::string line;
+        while (std::getline(ss, line)) {
+            themed_println(line, fg, bold_flag, false, false);
+        }
+    }
+
+    void interactive_theme_selector() {
+        std::cout << "===== Console Theme Selector =====\n";
+        list_available_themes();
+        std::cout << "Enter theme name (or 'cancel'): ";
+        std::string input;
+        std::getline(std::cin, input);
+        if (input == "cancel") {
+            std::cout << "Theme unchanged.\n";
+            return;
+        }
+        if (set_theme_by_name(input)) {
+            std::cout << "Theme changed to '" << input << "'.\n";
+        }
+        else {
+            std::cout << "Unknown theme. Using current theme.\n";
+        }
+    }
+
+    static bool is_light_color(color c) {
+        return c == color::white || c == color::yellow || c == color::cyan || c == color::magenta || c == color::orange;
+    }
+
+    color resolve_text_color(color background, color desired) {
+        if (desired == color::reset) return desired;
+        if (background == desired) {
+            return is_light_color(background) ? color::black : color::white;
+        }
+        if (is_light_color(background)) {
+            if (desired == color::white || desired == color::yellow) {
+                return color::black;
+            }
+        }
+        else {
+            if (desired == color::black) {
+                return color::white;
+            }
+        }
+        return desired;
+    }
+
+    textcolor_manip adaptive_textcolor(color desired) {
+        return textcolor(resolve_text_color(current_console_theme.background, desired));
+    }
+
+    const console_theme& get_console_theme() {
+        return current_console_theme;
+    }
+
+    void set_console_theme(const console_theme& theme) {
+        current_console_theme = theme;
+    }
+
     // ---------- ANSI 辅助 ----------
     static const char* ansi_color_code(color c, bool is_background) {
         switch (c) {
@@ -41,7 +239,8 @@ namespace customio {
         case color::magenta: return is_background ? "\033[45m" : "\033[35m";
         case color::cyan:    return is_background ? "\033[46m" : "\033[36m";
         case color::white:   return is_background ? "\033[47m" : "\033[37m";
-        case color::reset:   return "\033[0m";
+        case color::orange:  return is_background ? "\033[43m" : "\033[33m"; // 映射到黄色
+        case color::reset:   return is_background ? "\033[49m" : "\033[39m";
         default:             return "";
         }
     }
@@ -60,7 +259,11 @@ namespace customio {
 
     resetcolor_manip resetcolor() { return {}; }
     std::ostream& operator<<(std::ostream& os, const resetcolor_manip&) {
-        os << ansi_color_code(color::reset, false);
+        const auto& theme = current_console_theme;
+        // 重置文本样式
+        os << "\033[22m\033[24m\033[23m";
+        // 恢复为当前主题的默认颜色，而非系统终端默认
+        os << background(theme.background) << adaptive_textcolor(theme.text);
         return os;
     }
 
@@ -244,7 +447,12 @@ namespace customio {
 
     // ---------- 彩色提示 ----------
     std::string prompt(const std::string& prompt_text, color c) {
-        std::cout << textcolor(c) << prompt_text << resetcolor() << std::flush;
+        const auto& theme = get_console_theme();
+        std::cout << background(theme.background)
+            << adaptive_textcolor(c)
+            << prompt_text
+            << adaptive_textcolor(theme.text) // 恢复默认文本颜色，保持主题背景色不变
+            << std::flush;
         std::string input;
         std::getline(std::cin, input);
         return input;
@@ -256,12 +464,12 @@ namespace customio {
         size_t cols = data[0].size();
         std::vector<size_t> widths(cols, 0);
 
-        // 计算每列最大宽度
-        for (const auto& row : data) {
-            for (size_t i = 0; i < row.size() && i < cols; ++i) {
-                widths[i] = std::max(widths[i], row[i].size());
-            }
-        }
+
+        // for (const auto& row : data) {
+        //     for (size_t i = 0; i < row.size() && i < cols; ++i) {
+        //         widths[i] = std::max(widths[i], row[i].size());
+        //     }
+        // }
 
         auto print_separator = [&]() {
             std::cout << '+';
@@ -292,10 +500,11 @@ namespace customio {
 
     // ---------- 日志着色 ----------
     std::ostream& log(log_level level) {
+        const auto& theme = get_console_theme();
         switch (level) {
-        case log_level::INFO:  std::cout << textcolor(color::green) << "[INFO] "; break;
-        case log_level::WARN:  std::cout << textcolor(color::yellow) << "[WARN] "; break;
-        case log_level::ERR: std::cout << textcolor(color::red) << "[ERROR] "; break;
+        case log_level::INFO:  std::cout << adaptive_textcolor(theme.info) << "[INFO] "; break;
+        case log_level::WARN:  std::cout << adaptive_textcolor(theme.warning) << "[WARN] "; break;
+        case log_level::ERR:   std::cout << adaptive_textcolor(theme.error) << "[ERROR] "; break;
         }
         return std::cout;
     }

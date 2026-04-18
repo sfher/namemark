@@ -1,9 +1,16 @@
-﻿#include "act.h"
-#include "entity.h"
+﻿// act.cpp 开头部分
+#include "act.h"
+#include "entity.h" 
 #include "customio.h"
+#include "skill_executor.h" 
+#include "damage_calculator.h"  
+#include "skill_data.h"
+#include "generic_skill.h"
 #include <algorithm>
 #include <climits>
 #include <math.h>
+#define NOMINMAX
+#include <windows.h>  // for Sleep
 
 using namespace customio;
 
@@ -22,23 +29,92 @@ const std::unordered_map<std::string, SkillInfo>& SkillRegistry::getAllSkills() 
     return skills_;
 }
 
+// act.cpp 中 registerAllSkills 的新实现
 void registerAllSkills() {
-    SkillRegistry::registerSkill("attack", SkillInfo{ "攻击", 100, 10, []() { return std::make_unique<Attack>(); } });
-    SkillRegistry::registerSkill("defense", SkillInfo{ "防御", 80, 5, []() { return std::make_unique<Defense>(); } });
-    SkillRegistry::registerSkill("smash", SkillInfo{ "冲撞", 25, 9, []() { return std::make_unique<Smash>(); } });
-    SkillRegistry::registerSkill("combo", SkillInfo{ "连击", 30, 7, []() { return std::make_unique<ComboAttack>(); } });
-    SkillRegistry::registerSkill("magic_missile", SkillInfo{ "魔法飞弹", 50, 9, []() { return std::make_unique<MagicMissile>(); } });
-    SkillRegistry::registerSkill("summon_phantom", SkillInfo{ "召唤幻影", 20, 7, []() { return std::make_unique<SummonPhantom>(); } });
-    SkillRegistry::registerSkill("speedup", SkillInfo{ "加速术", 35, 5, []() { return std::make_unique<Speedup>(); } });
-    SkillRegistry::registerSkill("poison_magic", SkillInfo{ "毒魔法", 45, 8, []() { return std::make_unique<PoisonMagic>(); } });
-    SkillRegistry::registerSkill("fireball", SkillInfo{ "火球术", 55, 9, []() { return std::make_unique<Fireball>(); } });
-    SkillRegistry::registerSkill("heal_magic", SkillInfo{ "治愈魔法", 51, 8, []() { return std::make_unique<HealMagic>(); } });
-    SkillRegistry::registerSkill("magic_punch", SkillInfo{ "魔法重拳", 52, 8, []() { return std::make_unique<MagicPunch>(); } });
-    SkillRegistry::registerSkill("ground_fissure", SkillInfo{ "裂地术", 43, 7, []() { return std::make_unique<GroundFissure>(); } });
-    SkillRegistry::registerSkill("lightning_chain", SkillInfo{ "闪电术", 32, 6, []() { return std::make_unique<LightningChain>(); } });
-    SkillRegistry::registerSkill("meteor_strike", SkillInfo{ "陨石冲击", 7, 10, []() { return std::make_unique<MeteorStrike>(); } });
-    SkillRegistry::registerSkill("void_explosion", SkillInfo{ "虚爆", 7, 10, []() { return std::make_unique<VoidExplosion>(); } });
+    using SD = SkillData;
+
+    // ---------- 数据驱动的标准技能表 ----------
+    std::vector<SkillData> skill_table = {
+        // 攻击
+        { "attack", "攻击", 100, 10, 80,
+          {{"C_AP", 12}}, TargetType::SINGLE_ENEMY_LOWEST_HP,
+          SD::Type::SINGLE_DAMAGE, 90, DamageFormula::ATK, 1.0f, true },
+
+          // 防御
+          { "defense", "防御", 80, 5, 20,
+            {{"C_AP", 15}}, TargetType::NONE,
+            SD::Type::SELF_BUFF, 100, DamageFormula::ATK, 0.0f, false, false,
+            {}, { {"DEFENSE_BUFF", 50, 2} }, {} },
+
+            // 魔法飞弹
+            { "magic_missile", "魔法飞弹", 50, 9, 60,
+              {{"MP", 15}, {"C_AP", 10}}, TargetType::SINGLE_ENEMY_LOWEST_HP,
+              SD::Type::SINGLE_DAMAGE, 90, DamageFormula::MATK, 1.6f, true },
+
+              // 加速术
+              { "speedup", "加速术", 35, 6, 40,
+                {{"MP", 20}}, TargetType::NONE,
+                SD::Type::SELF_BUFF, 100, DamageFormula::ATK, 0.0f, false, false,
+                {}, {}, {{"C_AP", 25}} },
+
+                // 魔法重拳
+                { "magic_punch", "魔法重拳", 60, 10, 40,
+                  {{"MP", 15}, {"C_AP", 15}}, TargetType::SINGLE_ENEMY_LOWEST_HP,
+                  SD::Type::SINGLE_DAMAGE, 90, DamageFormula::ATK_MATK_COMBINED, 1.2f, true },
+
+                  // 虚爆
+                  { "void_explosion", "虚爆", 7, 10, 40,
+                    {{"MP", 25}, {"C_AP", 25}}, TargetType::SINGLE_ENEMY_LOWEST_HP,
+                    SD::Type::SINGLE_DAMAGE, 90, DamageFormula::ATK_MATK_COMBINED, 1.8f, true },
+
+                    // 裂地术
+                    { "ground_fissure", "裂地术", 30, 7, 70,
+                      {{"C_AP", 25}, {"MP", 20}}, TargetType::ALL_ENEMIES,
+                      SD::Type::AOE_DAMAGE, 80, DamageFormula::MATK, 1.2f, true, false },
+
+                      // 陨石冲击
+                      { "meteor_strike", "陨石打击", 7, 10, 50,
+                        {{"MP", 40}, {"C_AP", 30}}, TargetType::ALL_ENEMIES,
+                        SD::Type::AOE_DAMAGE, 75, DamageFormula::MATK, 3.0f, true, false },
+
+                        // 冥想
+                        { "meditate", "冥想", 30, 5, 30,
+                          {{"C_AP", 15}}, TargetType::NONE,
+                          SD::Type::SELF_BUFF, 100, DamageFormula::ATK, 0.0f, false, false,
+                          {}, {}, {} },  // MP 修改在 execute_self_buff 调用前动态计算，需特殊处理，保留派生类或用 lambda，这里仍用派生类
+
+                          // 自愈（由于回复量依赖 MAX_HP，动态计算，保留派生类或扩展支持 lambda，此处先保留派生类）
+                          // 吸血（含回调，保留派生类）
+                          // 治愈魔法（治疗量含动态公式，保留派生类或使用 heal_func lambda，我们将在后面展示 lambda 用法）
+    };
+
+    // 注册表中技能
+    // 注册数据表技能
+    for (const auto& data : skill_table) {
+        SkillInfo info(
+            data.display_name,
+            data.acquire_chance,
+            data.weight,
+            [data]() -> std::unique_ptr<act> {
+                return std::make_unique<GenericSkill>(data);
+            }
+        );
+        SkillRegistry::registerSkill(data.id, info);
+    }
+
+    // 注册保留的派生类技能（使用构造函数语法）
+    SkillRegistry::registerSkill("smash", SkillInfo("冲撞", 40, 8, []() { return std::make_unique<Smash>(); }));
+    SkillRegistry::registerSkill("combo", SkillInfo("连击", 30, 7, []() { return std::make_unique<ComboAttack>(); }));
+    SkillRegistry::registerSkill("poison_magic", SkillInfo("毒魔法", 45, 8, []() { return std::make_unique<PoisonMagic>(); }));
+    SkillRegistry::registerSkill("fireball", SkillInfo("火球术", 55, 9, []() { return std::make_unique<Fireball>(); }));
+    SkillRegistry::registerSkill("heal_magic", SkillInfo("治愈魔法", 50, 8, []() { return std::make_unique<HealMagic>(); }));
+    SkillRegistry::registerSkill("summon_phantom", SkillInfo("召唤幻影", 25, 9, []() { return std::make_unique<SummonPhantom>(); }));
+    SkillRegistry::registerSkill("lightning", SkillInfo("闪电术", 20, 8, []() { return std::make_unique<LightningChain>(); }));
+    SkillRegistry::registerSkill("self_heal", SkillInfo("自愈", 7, 10, []() { return std::make_unique<SelfHeal>(); }));
+    SkillRegistry::registerSkill("void_god_summon", SkillInfo("虚神召唤", 10, 10, []() { return std::make_unique<VoidGodSummon>(); }));
+    SkillRegistry::registerSkill("lifesteal", SkillInfo("吸血", 20, 8, []() { return std::make_unique<Lifesteal>(); }));
 }
+
 // ---------- 基类 act 实现 ----------
 std::vector<character*> act::get_targets(const FightContext& ctx, character* caster) const {
     std::vector<character*> result;
@@ -126,7 +202,7 @@ bool act::can_execute(const character* c, const FightContext& ctx) const {
 // ---------- 攻击行为 ----------
 Attack::Attack() : act(80) {
     name_ = "攻击";
-    set_consume("C_AP", 17);
+    set_consume("C_AP", 12);  // 平衡调整：降低消耗
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
 
@@ -138,41 +214,23 @@ bool Attack::can_execute(const character* c, const FightContext& ctx) const {
 bool Attack::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::green) << c->get_name() << " 攻击 " << target->get_name() << "！"
-                  << resetcolor() << std::endl;
-    }
-
-    const int hit_rate = 90;
-    if (!chance(hit_rate)) {
-        if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::yellow) << c->get_name() << " 攻击落空了！"
-                      << resetcolor() << std::endl;
-        }
-        return true;
-    }
-
-    int atk = c->get_attribute("ATK");
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        90,                         // 命中率
+        DamageFormula::ATK,         // 伤害公式
+        1.0f,                       // 系数
+        name_,
+        true,                       // 使用防御
+        {},                         // 无附加Buff
+        nullptr                     // 无回调
+    );
 }
 
 // 冲撞
 Smash::Smash() : act(40) {
     name_ = "冲撞";
-    set_consume("C_AP", 23);
+    set_consume("C_AP", 23);        // 消耗不变
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
 
@@ -184,25 +242,27 @@ bool Smash::can_execute(const character* c, const FightContext& ctx) const {
 bool Smash::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    // 扣费
+    if (!SkillExecutor::deduct_cost(c, consume_, ctx)) return false;
 
-    std::vector<character*> targets = get_targets(ctx, c);
+    // 索敌
+    std::vector<character*> targets = SkillExecutor::get_targets(ctx, c, target_type_);
     if (targets.empty()) return false;
     character* target = targets[0];
 
+    // 日志
     if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::yellow) << c->get_name() << " 撞击 " << target->get_name() << "！"
-                  << resetcolor() << std::endl;
+        const auto& theme = customio::get_console_theme();
+        std::cout << customio::adaptive_textcolor(theme.attack)
+            << c->get_name() << " 撞击 " << target->get_name() << "！"
+            << customio::resetcolor() << std::endl;
+        Sleep(150);
     }
 
-    float powdamage = std::min((float)std::pow(1.1f, c->get_attribute("ATK")), c->get_attribute("ATK") * 2.5f);
-    int atk = std::max((int)powdamage, c->get_attribute("ATK"));
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
+    // 使用DamageCalculator的ATK_POWER公式（保留原有效果）
+    int raw_atk = DamageCalculator::calculate_raw_attack(c, DamageFormula::ATK_POWER);
+    int final_damage = DamageCalculator::calculate_final_damage(c, target, raw_atk, true);
+
     target->take_damage(final_damage);
     return true;
 }
@@ -210,7 +270,7 @@ bool Smash::execute(character* c, FightContext& ctx) {
 // 连击
 ComboAttack::ComboAttack() : act(70) {
     name_ = "连击";
-    set_consume("C_AP", 25);
+    set_consume("C_AP", 22);        // 平衡调整
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
 
@@ -222,40 +282,42 @@ bool ComboAttack::can_execute(const character* c, const FightContext& ctx) const
 bool ComboAttack::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    if (!SkillExecutor::deduct_cost(c, consume_, ctx)) return false;
 
-    std::vector<character*> targets = get_targets(ctx, c);
+    std::vector<character*> targets = SkillExecutor::get_targets(ctx, c, target_type_);
     if (targets.empty()) return false;
     character* target = targets[0];
 
     const int max_hits = 3;
-    const float damage_decay = 0.6f;
-    int current_damage = c->get_attribute("ATK") - target->get_attribute("DEF");
-    if (current_damage < 1) current_damage = 1;
+    const float damage_coeff = 0.8f;    // 每段基础系数
+    const float decay = 0.6f;           // 衰减
+    const int hit_rate = 90;
 
     for (int i = 0; i < max_hits; ++i) {
         if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::green) << c->get_name() << " 连击第" << i + 1 << "段！"
-                      << resetcolor() << std::endl;
+            std::cout << customio::textcolor(customio::color::white)
+                << c->get_name() << " 连击第" << i + 1 << "段！"
+                << customio::resetcolor() << std::endl;
+            Sleep(100);
         }
 
-        const int hit_rate = 90;
-        if (chance(hit_rate)) {
-            int final_damage = CritCalculator::apply(c, current_damage);
+        // 每段独立命中判定
+        if (!SkillExecutor::hit_check(c, hit_rate)) {
+            if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
+                std::cout << customio::textcolor(customio::color::yellow)
+                    << "连击未命中！" << customio::resetcolor() << std::endl;
+            }
+            // 平衡调整：不再中断，继续后续段数（但本次伤害为0）
+            // 更新系数并继续
+            // 注意：这里没有伤害，但仍需衰减系数？
+        }
+        else {
+            float coeff = damage_coeff * std::pow(decay, i);
+            int raw_atk = DamageCalculator::calculate_raw_attack(c, DamageFormula::ATK, coeff);
+            int final_damage = DamageCalculator::calculate_final_damage(c, target, raw_atk, true);
             target->take_damage(final_damage);
             if (!target->is_alive()) break;
-        } else {
-            if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::yellow) << "连击中断！" << resetcolor() << std::endl;
-            }
-            break;
         }
-
-        current_damage = static_cast<int>(current_damage * damage_decay);
-        if (current_damage < 1) break;
     }
     return true;
 }
@@ -263,7 +325,7 @@ bool ComboAttack::execute(character* c, FightContext& ctx) {
 // 魔法飞弹
 MagicMissile::MagicMissile() : act(60) {
     name_ = "魔法飞弹";
-    set_consume("MP", 20);
+    set_consume("MP", 15);           // 平衡调整
     set_consume("C_AP", 10);
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
@@ -276,35 +338,15 @@ bool MagicMissile::can_execute(const character* c, const FightContext& ctx) cons
 bool MagicMissile::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::green) << c->get_name() << " 发射魔法飞弹!"
-                  << resetcolor() << std::endl;
-    }
-
-    const int hit_rate = 90;
-    if (!chance(hit_rate)) {
-        if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::yellow) << c->get_name() << " 攻击落空了！"
-                      << resetcolor() << std::endl;
-        }
-        return true;
-    }
-
-    int atk = c->get_attribute("MATK") * 2.0f;
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        90,
+        DamageFormula::MATK,
+        1.6f,                        // 平衡调整：降低系数
+        name_,
+        true
+    );
 }
 
 // 召唤幻影
@@ -357,13 +399,17 @@ bool SummonPhantom::execute(character* c, FightContext& ctx) {
     phantom->setattribute("CRIT", crit);
     phantom->setattribute("CRIT_D", crit_d);
     phantom->setattribute("C_AP", cap);
+    // 继承本体的输出风格
+    phantom->SetRule(SLOW_BATTLE, c->GetRule(SLOW_BATTLE));
+    phantom->SetRule(BATTLE_WITHOUT_OUTPUT, c->GetRule(BATTLE_WITHOUT_OUTPUT));
 
     phantom->get_actions().clear();
     phantom->get_actions().push_back(std::make_unique<Attack>());
     phantom->get_actions().push_back(std::make_unique<Defense>());
 
     if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::magenta) << c->get_name() << " 召唤出 " << phantom_name << "！" << resetcolor() << std::endl;
+        std::cout << textcolor(color::white) << c->get_name() << " 召唤出 " << phantom_name << "！" << resetcolor() << std::endl;
+        Sleep(150);
     }
 
     ctx.summoned->push_back(std::move(phantom));
@@ -375,7 +421,7 @@ bool SummonPhantom::execute(character* c, FightContext& ctx) {
 // 加速术
 Speedup::Speedup() : act(40) {
     name_ = "加速术";
-    set_consume("MP", 15);
+    set_consume("MP", 20);          // 平衡调整：消耗增加
     set_target_type(TargetType::NONE);
 }
 
@@ -386,18 +432,16 @@ bool Speedup::can_execute(const character* c, const FightContext& ctx) const {
 bool Speedup::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    std::unordered_map<std::string, int> attr_mods = {
+        {"C_AP", 25}                // 平衡调整：AP+25
+    };
 
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::cyan) << c->get_name() << "使用加速术！\n" << resetcolor();
-    }
-
-    int old_ap = c->get_attribute("C_AP");
-    c->setattribute("C_AP", old_ap + 30, false);
-    return true;
+    return SkillExecutor::execute_self_buff(
+        c, ctx, consume_,
+        name_,
+        {},                         // 无 Buff
+        attr_mods
+    );
 }
 
 // 毒魔法
@@ -416,36 +460,22 @@ bool PoisonMagic::can_execute(const character* c, const FightContext& ctx) const
 bool PoisonMagic::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    // 动态计算中毒伤害（基于MATK）
+    int poison_damage = static_cast<int>(c->get_attribute("MATK") * 0.2f);
+    std::vector<BuffApplication> buffs = {
+        {"POISON", poison_damage, 3}  // 持续3回合
+    };
 
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::green) << c->get_name() << " 施放毒魔法！"
-                  << resetcolor() << std::endl;
-    }
-
-    const int hit_rate = 85;
-    if (!chance(hit_rate)) {
-        if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::yellow) << c->get_name() << " 的魔法被躲避了！"
-                      << resetcolor() << std::endl;
-        }
-        return true;
-    }
-
-    int atk = c->get_attribute("MATK") * 1.5f;
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    target->add_buff("POISON", 8, 4);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        85,
+        DamageFormula::MATK,
+        1.5f,
+        name_,
+        true,
+        buffs
+    );
 }
 
 // 火球术
@@ -464,36 +494,21 @@ bool Fireball::can_execute(const character* c, const FightContext& ctx) const {
 bool Fireball::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    int burn_damage = static_cast<int>(c->get_attribute("MATK") * 0.3f);
+    std::vector<BuffApplication> buffs = {
+        {"BURN", burn_damage, 2}     // 持续2回合
+    };
 
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::red) << c->get_name() << " 施放火球术！"
-                  << resetcolor() << std::endl;
-    }
-
-    const int hit_rate = 90;
-    if (!chance(hit_rate)) {
-        if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::yellow) << c->get_name() << " 的魔法被躲避了！"
-                      << resetcolor() << std::endl;
-        }
-        return true;
-    }
-
-    int atk = c->get_attribute("MATK") * 2.0f;
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    target->add_buff("BURN", 12, 3);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        90,
+        DamageFormula::MATK,
+        2.0f,
+        name_,
+        true,
+        buffs
+    );
 }
 
 // 治愈魔法
@@ -512,40 +527,23 @@ bool HealMagic::can_execute(const character* c, const FightContext& ctx) const {
 bool HealMagic::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    auto heal_func = [](character* caster, character* target) -> int {
+        return static_cast<int>(caster->get_attribute("MATK") * 2.0f + 30);
+        };
 
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::magenta) << c->get_name() << " 施放治愈魔法！"
-                  << resetcolor() << std::endl;
-    }
-
-    int heal_amount = static_cast<int>(c->get_attribute("MATK") * 1.8f + 50);
-    int current_hp = target->get_attribute("HP");
-    int max_hp = target->get_attribute("MAX_HP");
-    int new_hp = std::min(current_hp + heal_amount, max_hp);
-    int actual_heal = new_hp - current_hp;
-    target->setattribute("HP", new_hp, false);
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::green) << target->get_name() << " 恢复了 "
-                  << actual_heal << " 点生命值！当前HP: " << new_hp << "/"
-                  << max_hp << resetcolor() << std::endl;
-    }
-    return true;
+    return SkillExecutor::execute_heal(
+        c, ctx, consume_,
+        target_type_,
+        name_,
+        heal_func
+    );
 }
 
 // 魔法重拳
 MagicPunch::MagicPunch() : act(40) {
     name_ = "魔法重拳";
-    set_consume("MP", 12);
-    set_consume("C_AP", 12);
+    set_consume("MP", 15);           // 平衡调整
+    set_consume("C_AP", 15);
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
 
@@ -557,42 +555,22 @@ bool MagicPunch::can_execute(const character* c, const FightContext& ctx) const 
 bool MagicPunch::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::red) << c->get_name() << " 使用魔法重拳!"
-                  << resetcolor() << std::endl;
-    }
-
-    const int hit_rate = 90;
-    if (!chance(hit_rate)) {
-        if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-            std::cout << textcolor(color::yellow) << c->get_name() << " 攻击落空了！"
-                      << resetcolor() << std::endl;
-        }
-        return true;
-    }
-
-    int atk = c->get_attribute("MATK") + c->get_attribute("ATK");
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        90,
+        DamageFormula::ATK_MATK_COMBINED,
+        1.2f,                        // 平衡调整：增加系数
+        name_,
+        true
+    );
 }
 
 // 裂地术
-GroundFissure::GroundFissure() : act(70) {  // 成功率降低到 70%
+GroundFissure::GroundFissure() : act(70) {
     name_ = "裂地术";
-    set_consume("C_AP", 35);   // 提高 AP 消耗
-    set_consume("MP", 25);     // 提高 MP 消耗
+    set_consume("C_AP", 25);   // 平衡调整：降低消耗
+    set_consume("MP", 20);
     set_target_type(TargetType::ALL_ENEMIES);
 }
 
@@ -604,36 +582,17 @@ bool GroundFissure::can_execute(const character* c, const FightContext& ctx) con
 bool GroundFissure::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::magenta) << c->get_name() << " 施放裂地术！"
-                  << resetcolor() << std::endl;
-    }
-
-    // 伤害分摊：总伤害固定 = MATK * 1.5，人数越多单体越低
-    int total_damage = static_cast<int>(c->get_attribute("MATK") * 1.5f);
-    int per_target_damage = std::max(1, total_damage / (int)targets.size());
-
-    const int hit_rate = 50;  // 命中率降低到 50%
-    for (character* target : targets) {
-        if (!chance(hit_rate)) {
-            if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-                std::cout << textcolor(color::yellow) << " 裂地术未能击中 " << target->get_name()
-                          << resetcolor() << std::endl;
-            }
-            continue;
-        }
-        int final_damage = CritCalculator::apply(c, per_target_damage);
-        target->take_damage(final_damage);
-    }
-    return true;
+    return SkillExecutor::execute_aoe_damage(
+        c, ctx, consume_,
+        target_type_,
+        80,                         // 平衡调整：命中率 80%
+        DamageFormula::MATK,
+        1.2f,                       // 系数 1.2
+        name_,
+        true,                       // 使用防御
+        {},                         // 无 Buff
+        false                       // 不分摊，各自计算
+    );
 }
 // 闪电术
 LightningChain::LightningChain() : act(75) {
@@ -661,8 +620,9 @@ bool LightningChain::execute(character* c, FightContext& ctx) {
     character* current_target = targets[0];
 
     if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::cyan) << c->get_name() << " 施放闪电术！"
+        std::cout << textcolor(color::white) << c->get_name() << " 施放闪电术！"
                   << resetcolor() << std::endl;
+        Sleep(150);
     }
 
     int base_damage = static_cast<int>(c->get_attribute("MATK") * 2.0f);
@@ -718,6 +678,7 @@ MeteorStrike::MeteorStrike() : act(50) {
     set_consume("C_AP", 30);
     set_target_type(TargetType::ALL_ENEMIES);
 }
+
 bool MeteorStrike::can_execute(const character* c, const FightContext& ctx) const {
     if (!act::can_execute(c, ctx)) return false;
     return !ctx.enemies.empty();
@@ -726,70 +687,43 @@ bool MeteorStrike::can_execute(const character* c, const FightContext& ctx) cons
 bool MeteorStrike::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    // 扣除消耗
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::red) << c->get_name() << " 施放陨石打击！"
-            << resetcolor() << std::endl;
-    }
-
-	int base_damage = static_cast<int>(c->get_attribute("MATK") * 3.0f); // 强力单体伤害，后续可调整为群体伤害
-    int per_target_damage = base_damage; // 可根据人数调整
-
-    for (character* target : targets) {
-        if (!chance(85)) continue;
-        int final_damage = CritCalculator::apply(c, per_target_damage);
-        target->take_damage(final_damage);
-    }
-    return true;
+    return SkillExecutor::execute_aoe_damage(
+        c, ctx, consume_,
+        target_type_,
+        75,                         // 平衡调整：命中率 75%
+        DamageFormula::MATK,
+        3.0f,                       // 高系数
+        name_,
+        true,                       // 减去防御
+        {},                         // 无 Buff
+        false                       // 各自计算
+    );
 }
 
 VoidExplosion::VoidExplosion() : act(40) {
     name_ = "虚爆";
-    set_consume("MP", 20);
-    set_consume("C_AP", 20);
+    set_consume("MP", 25);           // 平衡调整
+    set_consume("C_AP", 25);
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
 }
 
 bool VoidExplosion::can_execute(const character* c, const FightContext& ctx) const {
     if (!act::can_execute(c, ctx)) return false;
-    if (c->get_attribute("AP") % 2 == 0 && c->get_attribute("MP") % 2 == 0) //如果AP和MP都是偶数触发
-    {
-        return !ctx.enemies.empty();
-    }
-    else return 0;
+    return !ctx.enemies.empty();
 }
 
 bool VoidExplosion::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
-
-    std::vector<character*> targets = get_targets(ctx, c);
-    if (targets.empty()) return false;
-    character* target = targets[0];
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::red) << c->get_name() << " 使用虚爆!"
-            << resetcolor() << std::endl;
-    }
-
-	int atk = std::pow((c->get_attribute("MATK") + c->get_attribute("ATK")), 1.2); //虚爆伤害基于攻击和魔攻的综合，且有额外的倍率加成
-    int def = target->get_attribute("DEF");
-    int base_damage = std::max(1, atk - def);
-    int final_damage = CritCalculator::apply(c, base_damage);
-    target->take_damage(final_damage);
-    return true;
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        90,                          // 平衡调整：增加命中判定
+        DamageFormula::ATK_MATK_COMBINED,
+        1.8f,                        // 平衡调整：替代幂次
+        name_,
+        true
+    );
 }
 
 // 暴击判定
@@ -808,10 +742,182 @@ int CritCalculator::apply(character* attacker, int base_damage) {
     return base_damage;
 }
 
-// 防御行为
+// 自愈行为
+SelfHeal::SelfHeal() : act(20) {
+    name_ = "自愈";
+    set_consume("C_AP", 15);        // 平衡调整
+    set_consume("MP", 15);
+    set_target_type(TargetType::SINGLE_ALLY_SELF);
+}
+
+bool SelfHeal::can_execute(const character* c, const FightContext& ctx) const {
+    return act::can_execute(c, ctx);
+}
+
+bool SelfHeal::execute(character* c, FightContext& ctx) {
+    if (!can_execute(c, ctx)) return false;
+
+    int heal_per_turn = static_cast<int>(c->get_attribute("MAX_HP") * 0.1f); // 10%最大HP
+    std::vector<BuffApplication> buffs = {
+        {"SELF_HEAL", heal_per_turn, 3}
+    };
+
+    return SkillExecutor::execute_self_buff(
+        c, ctx, consume_,
+        name_,
+        buffs
+    );
+}
+
+VoidGodSummon::VoidGodSummon() : act(100) {
+    name_ = "虚神召唤";
+    set_consume("MP", 50);
+    set_consume("C_AP", 50);
+    set_target_type(TargetType::NONE);
+}
+bool VoidGodSummon::can_execute(const character* c, const FightContext& ctx) const {
+    if (!act::can_execute(c, ctx)) return false;
+    if (ctx.summoned == nullptr) return false;
+    return ctx.char_team.find(const_cast<character*>(c)) != ctx.char_team.end();
+}
+
+bool VoidGodSummon::execute(character* c, FightContext& ctx) {
+     if (!can_execute(c, ctx)) return false;
+
+    for (const auto& pair : consume_) {
+        int old = c->get_attribute(pair.first);
+        c->setattribute(pair.first, old - pair.second, false);
+    }
+
+    auto it = ctx.char_team.find(c);
+    if (it == ctx.char_team.end() || ctx.summoned == nullptr) return false;
+    Team* team = const_cast<Team*>(it->second);
+
+    std::string phantom_name = "虚神";
+    auto phantom = std::make_unique<character>();
+    phantom->set_name(phantom_name);
+
+    int hp = 200;
+    int mp = 50;
+    int atk = 50;
+    int matk = 50;
+    int def = 10;
+    int spd = 40;
+    int crit = 10;
+    int crit_d = 300;
+    int cap = 50;
+
+    phantom->setattribute("HP", hp);
+    phantom->setattribute("MAX_HP", hp);
+    phantom->setattribute("MP", mp);
+    phantom->setattribute("ATK", atk);
+    phantom->setattribute("MATK", matk);
+    phantom->setattribute("DEF", def);
+    phantom->setattribute("SPD", spd);
+    phantom->setattribute("CRIT", crit);
+    phantom->setattribute("CRIT_D", crit_d);
+    phantom->setattribute("C_AP", cap);
+
+    phantom->add_buff("SELF_HEAL", 5, 999); // 虚神特有的增益效果，永久每回合回复5点生命
+    phantom->add_buff("DEFENSE_BUFF", 50, 999);
+    // 继承本体的输出风格
+    phantom->SetRule(SLOW_BATTLE, c->GetRule(SLOW_BATTLE));
+    phantom->SetRule(BATTLE_WITHOUT_OUTPUT, c->GetRule(BATTLE_WITHOUT_OUTPUT));
+
+    phantom->get_actions().clear();
+    phantom->get_actions().push_back(std::make_unique<Attack>());
+    phantom->get_actions().push_back(std::make_unique<Attack>());
+    phantom->get_actions().push_back(std::make_unique<Attack>());
+    phantom->get_actions().push_back(std::make_unique<VoidExplosion>());
+    phantom->get_actions().push_back(std::make_unique<Smash>());
+    phantom->get_actions().push_back(std::make_unique<GroundFissure>());
+
+    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
+        std::cout << textcolor(color::magenta) << c->get_name() << " 召唤出 " << phantom_name << "！" << resetcolor() << std::endl;
+    }
+
+    ctx.summoned->push_back(std::move(phantom));
+    team->add_character(*ctx.summoned->back());
+
+    return true;
+}
+
+// 吸血行为
+Lifesteal::Lifesteal() : act(20) {
+    name_ = "吸血攻击";
+    set_consume("C_AP", 20);         // 平衡调整
+    set_consume("MP", 15);
+    set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);  // 修正目标类型
+}
+
+bool Lifesteal::can_execute(const character* c, const FightContext& ctx) const {
+    if (!act::can_execute(c, ctx)) return false;
+    return !ctx.enemies.empty();
+}
+
+bool Lifesteal::execute(character* c, FightContext& ctx) {
+    if (!can_execute(c, ctx)) return false;
+
+    // 吸血回调
+    auto on_hit = [](character* caster, character* target, int damage) {
+        int steal = damage / 2;
+        int new_hp = std::min(caster->get_attribute("MAX_HP"),
+            caster->get_attribute("HP") + steal);
+        caster->setattribute("HP", new_hp);
+        if (!caster->GetRule(BATTLE_WITHOUT_OUTPUT)) {
+            std::cout << customio::textcolor(customio::color::green)
+                << caster->get_name() << " 回复了 "
+                << customio::textcolor(customio::color::yellow) << steal
+                << customio::textcolor(customio::color::green) << " 点生命！"
+                << customio::resetcolor() << std::endl;
+        }
+        };
+
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_,
+        target_type_,
+        100,                         // 必中
+        DamageFormula::ATK_MATK_COMBINED,
+        1.1f,                        // 平衡调整
+        name_,
+        true,
+        {},                          // 无Buff
+        on_hit
+    );
+}
+
+// 冥想
+Meditate::Meditate() : act(30) {
+    name_ = "冥想";
+    set_consume("C_AP", 15);
+    set_target_type(TargetType::NONE);
+}
+
+bool Meditate::can_execute(const character* c, const FightContext& ctx) const {
+    return act::can_execute(c, ctx);
+}
+
+bool Meditate::execute(character* c, FightContext& ctx) {
+    if (!can_execute(c, ctx)) return false;
+
+    // 动态计算回复量：最大MP的30% + 10
+    int mp_restore = static_cast<int>(c->get_attribute("MP") * 0.3f + 10);
+    std::unordered_map<std::string, int> attr_mods = {
+        {"MP", mp_restore}
+    };
+
+    return SkillExecutor::execute_self_buff(
+        c, ctx, consume_,
+        name_,
+        {},
+        attr_mods
+    );
+}
+
+// 防御
 Defense::Defense() : act(20) {
     name_ = "防御";
-    set_consume("C_AP", 20);
+    set_consume("C_AP", 15);        // 平衡调整：降低消耗
     set_target_type(TargetType::NONE);
 }
 
@@ -822,21 +928,18 @@ bool Defense::can_execute(const character* c, const FightContext& ctx) const {
 bool Defense::execute(character* c, FightContext& ctx) {
     if (!can_execute(c, ctx)) return false;
 
-    for (const auto& pair : consume_) {
-        int old = c->get_attribute(pair.first);
-        c->setattribute(pair.first, old - pair.second, false);
-    }
+    std::vector<BuffApplication> buffs = {
+        {"DEFENSE_BUFF", 50, 2}
+    };
 
-    const_cast<character*>(c)->add_buff("DEFENSE_BUFF", 50, 1);
-
-    if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
-        std::cout << textcolor(color::blue) << c->get_name() << " 采取防御姿态！"
-                  << resetcolor() << std::endl;
-    }
-    return true;
+    return SkillExecutor::execute_self_buff(
+        c, ctx, consume_,
+        name_,
+        buffs
+    );
 }
 
-// 目标选择器
+// ---------- 目标选择器实现 ----------
 character* TargetSelector::select_lowest_hp(const std::vector<character*>& enemies) {
     character* target = nullptr;
     int lowest_hp = INT_MAX;

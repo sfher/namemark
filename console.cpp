@@ -1,6 +1,7 @@
 ﻿#include "entity.h"
 #include "customio.h"
 #include "act.h"
+#include "damage_calculator.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -11,7 +12,8 @@
 #include <random>
 #include <chrono>
 #include <iomanip>
-#include <cctype>
+#define NOMINMAX
+#include <windows.h>  // for Sleep
 
 using namespace customio;
 
@@ -62,7 +64,6 @@ int calc_static_score(character& c) {
     double score = (phys_dps + magic_dps) * speed_factor + survival * 0.5;
     return static_cast<int>(score);
 }
-
 // 快速评分（基于静态属性，映射到 0-100）
 double get_fast_score(const std::string& char_name) {
     character tmp(char_name);
@@ -95,6 +96,7 @@ BattleResult run_1vN_battle(const std::string& char_name, int enemy_count) {
         mon->setattribute("CRIT", 10);
         mon->setattribute("CRIT_D", 150);
         mon->setattribute("C_AP", 30);
+        mon->init_default_actions(); //这很重要
         mon->SetRule(BATTLE_WITHOUT_OUTPUT, true);
         mon->SetRule(SHOW_ATTRIBUTES, false);
 
@@ -126,8 +128,8 @@ BattleResult run_1vN_battle(const std::string& char_name, int enemy_count) {
 struct BenchmarkReport {
     std::string char_name;
     double win_rate_1v1;   // 对1个标准敌人胜率
-    double win_rate_1v3;   // 对2个标准敌人胜率
-    double win_rate_1v7;   // 对4个标准敌人胜率
+    double win_rate_1v2;   // 对2个标准敌人胜率
+    double win_rate_1v3;   // 对3个标准敌人胜率
     double final_score;
     std::string grade;
     int static_score;
@@ -148,30 +150,37 @@ BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int b
 
     wins = 0;
     for (int i = 0; i < battles_per_test; ++i) {
+        auto res = run_1vN_battle(char_name, 2);
+        if (res.win) wins++;
+    }
+    report.win_rate_1v2 = (double)wins / battles_per_test * 100.0;
+
+    wins = 0;
+    for (int i = 0; i < battles_per_test; ++i) {
         auto res = run_1vN_battle(char_name, 3);
         if (res.win) wins++;
     }
     report.win_rate_1v3 = (double)wins / battles_per_test * 100.0;
 
-    wins = 0;
-    for (int i = 0; i < battles_per_test; ++i) {
-        auto res = run_1vN_battle(char_name, 7);
-        if (res.win) wins++;
-    }
-    report.win_rate_1v7 = (double)wins / battles_per_test * 100.0;
+    report.final_score = report.win_rate_1v1 * 0.5 + report.win_rate_1v2 * 0.3 + report.win_rate_1v3 * 0.2;
 
-    report.final_score = report.win_rate_1v1 * 0.6 + report.win_rate_1v3 * 0.3 + report.win_rate_1v7 * 0.1;
-
-    if (report.final_score >= 80) report.grade = "S";
-    else if (report.final_score >= 60) report.grade = "A";
-    else if (report.final_score >= 45) report.grade = "B";
-    else report.grade = "C";
+    if (report.final_score >= 85) report.grade = "S";
+    else if (report.final_score >= 70) report.grade = "A";
+    else if (report.final_score >= 55) report.grade = "B";
+    else if (report.final_score >= 40) report.grade = "C";
+    else report.grade = "D";
 
     character tmp(char_name);
     tmp.SetRule(SHOW_ATTRIBUTES, false);
     report.static_score = calc_static_score(tmp);
 
     return report;
+}
+
+// ========== 评分函数 ==========
+std::pair<double, std::string> evaluate_score(const std::string& char_name, int battles_per_test = 30) {
+    BenchmarkReport report = evaluate_character_benchmark(char_name, battles_per_test);
+    return { report.final_score, report.grade };
 }
 
 // ========== 批量模拟战斗 ==========
@@ -243,29 +252,46 @@ std::string trim(const std::string& s) {
     return std::string(start, end + 1);
 }
 
+void output_help() {
+    themed_println("Namemark Debug Console Help", color::yellow, true);
+    themed_println("----------------------------------------", color::white);
+    themed_println("Commands:", color::cyan, true);
+    themed_println("  @<TeamName>            - Create a team (e.g. @HeroTeam)", color::white);
+    themed_println("  <CharName> @<TeamName> - Create character and add to team", color::white);
+    themed_println("  [:ID] @<TeamName>      - Use imported character template to create character", color::white);
+    themed_println("  /help                  - Show help", color::white);
+    themed_println("  /fight                 - Start battle (all teams)", color::white);
+    themed_println("  /test <CharName>       - View character attributes", color::white);
+    themed_println("  /ftest [CharName]      - Quick score (static attributes)", color::white);
+    themed_println("  /import <filepath>     - Import characters from JSON file", color::white);
+    themed_println("  /simulate <list> vs <list> [times] - Batch battle simulations", color::white);
+    themed_println("  /find                  - Find characters with aegis", color::white);
+    themed_println("  /theme [name]          - List or switch available themes", color::white);
+    themed_println("  /settheme [name]       - Interactive theme selector or switch theme by name", color::white);
+    themed_println("  /end                   - Exit debug console", color::white);
+    themed_println("  /hfind                 - Find character with high benchmark score", color::white);
+    themed_println("  /cmd [command]         - use cmd commands", color::white);
+    themed_block("Tip: Character names cannot contain spaces, team names need @prefix, use [:ID] format for imported characters", color::white);
+    themed_println("----------------------------------------", color::white);
+}
 // ========== Debug Console ==========
 void debug_console() {
-    std::cout << bold() << textcolor(color::green)
-        << "\n===== Debug Console Started =====" << resetcolor() << std::endl;
-    std::cout << "Commands:" << std::endl;
-    std::cout << "  @<TeamName>            - Create a team (e.g. @HeroTeam)" << std::endl;
-    std::cout << "  <CharName> @<TeamName> - Create character and add to team" << std::endl;
-    std::cout << "  [:ID] @<TeamName>      - Use imported character template to create character" << std::endl;
-    std::cout << "  /fight                 - Start battle (all teams)" << std::endl;
-    std::cout << "  /test <CharName>       - View character attributes" << std::endl;
-    std::cout << "  /ftest [CharName]      - Quick score (static attributes)" << std::endl;
-    std::cout << "  /import <filepath>     - Import characters from JSON file" << std::endl;
-    std::cout << "  /simulate <list> vs <list> [times] - Batch battle simulations" << std::endl;
-    std::cout << "  /find                  - Find characters with aegis" << std::endl;
-    std::cout << "  /end                   - Exit debug console" << std::endl;
-    std::cout << "Tip: Character names cannot contain spaces, team names need @prefix, use [:ID] format for imported characters" << std::endl;
-    std::cout << "----------------------------------------" << std::endl;
+    set_theme_by_name("light"); // 默认使用 light 主题
+
+    const auto& theme = customio::get_console_theme();
+    std::cout << customio::background(theme.background)
+              << customio::adaptive_textcolor(theme.title)
+              << bold() << "\n===== Debug Console Started =====" << resetcolor() << std::endl;
+    output_help();
 
     std::string line;
     std::string current_team_name;
     while (true) {
-        std::cout << textcolor(color::cyan) << "debug> " << resetcolor();
-        std::getline(std::cin, line);
+        const auto& theme = customio::get_console_theme();
+        std::cout << customio::background(theme.background)
+                  << customio::adaptive_textcolor(theme.prompt) << "debug> " << resetcolor();
+        // 读取输入(让输入的颜色随着prompt颜色变化)
+        line = customio::prompt("", theme.prompt);
         line = trim(line);
         if (line.empty()) continue;
 
@@ -378,14 +404,39 @@ void debug_console() {
             tmp.outputattr();
             std::cout << "Evaluating character " << char_name << " (standard enemy, 30 battles each test)..." << std::endl;
             BenchmarkReport report = evaluate_character_benchmark(char_name, 30);
+
+            // 根据等级设置颜色
+            color grade_color;
+            if (report.grade == "S") {
+                grade_color = color::red;
+            } else if (report.grade == "A") {
+                grade_color = color::yellow;
+            } else if (report.grade == "B") {
+                grade_color = color::green;
+            } else if (report.grade == "C") {
+                grade_color = color::blue;
+            } else {
+                grade_color = color::cyan;
+            }
+
             std::cout << "\n========== Character Strength Report ==========" << std::endl;
             std::cout << "Character: " << char_name << std::endl;
-            std::cout << "Grade: " << report.grade << std::endl;
+            std::cout << "Grade: " << textcolor(grade_color) << bold() << report.grade << resetcolor() << std::endl;
             std::cout << "Overall Score: " << std::fixed << std::setprecision(1) << report.final_score << " / 100" << std::endl;
             std::cout << "1v1 Win Rate (30): " << report.win_rate_1v1 << "%" << std::endl;
+            std::cout << "1v2 Win Rate (30): " << report.win_rate_1v2 << "%" << std::endl;
             std::cout << "1v3 Win Rate (30): " << report.win_rate_1v3 << "%" << std::endl;
-            std::cout << "1v7 Win Rate (30): " << report.win_rate_1v7 << "%" << std::endl;
             std::cout << "Static Attribute Score: " << report.static_score << std::endl;
+            std::cout << "=============The actions of the character=============" << std::endl;
+            const auto& actions = tmp.get_actions();
+            if (actions.empty()) {
+                std::cout << "No actions available." << std::endl;
+            }
+            else {
+                for (size_t i = 0; i < actions.size(); ++i) {
+                    std::cout << i + 1 << ". " << actions[i]->get_name() << std::endl;
+                }
+            }
             std::cout << "==============================================\n" << std::endl;
             continue;
         }
@@ -407,8 +458,8 @@ void debug_console() {
                     name = trim(name);
                     if (name == "/end") break;
                     if (name.empty()) continue;
-                    double score = get_fast_score(name);
-                    std::cout << name << " : " << std::fixed << std::setprecision(1) << score << std::endl;
+                    std::pair<double, std::string>report = evaluate_score(name);
+                    std::cout << name << " : " << std::fixed << std::setprecision(1) << report.first << " Grade:" << report.second << std::endl;
                 }
             }
             continue;
@@ -593,12 +644,12 @@ void debug_console() {
             std::cout << "总测试次数: " << count << std::endl;
             std::cout << "拥有加护的角色数量: " << found_names.size() << std::endl;
             if (!found_names.empty()) {
-                std::cout << "名单：" << std::endl;
+                std::cout << "名单:" << std::endl;
                 for (const auto& name : found_names) {
                     // 可选：再次输出具体加护类型（需要创建临时角色查看）
                     character c(name);
                     c.SetRule(SHOW_ATTRIBUTES, false);
-                    std::cout << "  " << name << " : ";
+                    std::cout <<  name << " : ";
                     for (const auto& a : c.get_aegis()) {
                         std::cout << a << " ";
                     }
@@ -623,7 +674,77 @@ void debug_console() {
             }
             continue;
         }
+        //寻找高分角色并输出测试结果
+        if (line.substr(0, 6) == "/hfind") {
+            std::cout << "正在寻找高分角色（快速评分 >= 64）..." << std::endl;
+            std::vector<std::string> found_names;
+            int total_checked = 0;
 
+            // 进度显示
+            customio::progress_bar bar(10000, 50, '=', ' ', true);
+
+            for (int i = 0; i < 10000; ++i) {
+                std::string name = random_string(8, 8);
+                double score = get_fast_score(name);
+                if (score >= 64.0) {
+                    found_names.push_back(name);
+                }
+                total_checked++;
+                bar.update(total_checked);
+            }
+            bar.finish();
+
+            std::cout << "\n========== 高分角色检测结果 ==========" << std::endl;
+            std::cout << "总测试次数: " << total_checked << std::endl;
+            std::cout << "快速评分 >= 64 的角色数量: " << found_names.size() << std::endl;
+            if (!found_names.empty()) {
+                std::cout << "名单：" << std::endl;
+                for (const auto& name : found_names) {
+                    std::pair<double, std::string> report = evaluate_score(name);
+                    std::cout<< name << " : 快速评分 " << std::fixed << std::setprecision(1) << report.first << " Grade:" << report.second << std::endl;
+                }
+            }
+            std::cout << "====================================\n" << std::endl;
+            continue;
+        } 
+        if (line.rfind("/settheme", 0) == 0) {
+            std::string theme_name = trim(line.substr(9));
+            if (theme_name.empty()) {
+                customio::interactive_theme_selector();
+            } else {
+                if (customio::set_theme_by_name(theme_name)) {
+                    std::cout << "Theme switched to " << theme_name << ".\n";
+                } else {
+                    std::cout << "Unknown theme. Use /theme to list available themes.\n";
+                }
+            }
+            continue;
+        }
+        if (line.rfind("/theme", 0) == 0) {
+            std::string theme_name = trim(line.substr(6));
+            if (theme_name == "") {
+                customio::list_available_themes();
+            } else {
+                if (customio::set_theme_by_name(theme_name)) {
+                    std::cout << "Theme switched to " << theme_name << ".\n";
+                } else {
+                    std::cout << "Unknown theme. Use /theme to list available themes.\n";
+                }
+            }
+            continue;
+        }
+        if (line.rfind('/cmd', 0) == 0) {
+            std::string command = trim(line.substr(6));
+            if (command == "") {
+                customio::list_available_themes();
+            } else {
+                system(command.c_str());
+            }
+            continue;
+        }
         std::cout << "未知命令，请重新输入。" << std::endl;
     }
 }
+
+
+//测试新功能……

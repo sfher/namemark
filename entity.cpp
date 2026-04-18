@@ -7,6 +7,7 @@
 #include <climits>
 #include <fstream>
 #include <algorithm>
+#include <cctype>
 
 using namespace customio;
 
@@ -26,6 +27,7 @@ character::character() {
 
 character::character(std::string name) : name_(name) {
     // 检查是否使用导入的角色模板 [:id]
+
     if (name.length() > 4 && name[0] == '[' && name[1] == ':' && name[name.length() - 1] == ']') {
         std::string char_id = name.substr(2, name.length() - 3);
         const ImportedCharacterData* data = get_imported_character(char_id);
@@ -38,8 +40,27 @@ character::character(std::string name) : name_(name) {
             for (const auto& pair : data->attributes) {
                 setattribute(pair.first, pair.second);
             }
-            init_default_actions();
-            return;
+            
+            // 应用导入的行为，如果没有则使用默认
+            if (!data->actions.empty()) {
+                actions_.clear();
+                for (const auto& action_name : data->actions) {
+                    // 将行为名转换为小写以匹配注册表
+                    std::string lower_name = action_name;
+                    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), 
+                                   [](unsigned char c) { return std::tolower(c); });
+                    
+                    const SkillInfo* info = SkillRegistry::getSkillInfo(lower_name);
+                    if (info) {
+                        actions_.push_back(info->factory());
+                    } else {
+                        std::cout << textcolor(color::yellow) << "警告：未知行为 '" << action_name << "' 被跳过" << resetcolor() << std::endl;
+                    }
+                }
+            } else {
+                init_default_actions();
+            }
+            return; 
         }
     }
     
@@ -120,6 +141,7 @@ void character::init_default_actions() {
         actions_.push_back(std::make_unique<Attack>());
     }
 }
+
 
 bool character::do_action(FightContext& ctx) {
     // 收集所有可执行技能及其权重
@@ -203,12 +225,19 @@ void character::take_damage(int damage) {
     int current_hp = get_attribute("HP");
     int new_hp = current_hp - damage;
     setattribute("HP", std::max(0, new_hp));
-    if (!GetRule(BATTLE_WITHOUT_OUTPUT))
-        std::cout << textcolor(color::cyan) << name_ << " 受到了 " << damage
-        << " 点伤害，剩余HP：" << get_attribute("HP") << resetcolor() << std::endl;
+    if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+        const auto& theme = get_console_theme();
+        std::cout << adaptive_textcolor(theme.text) << name_ << " 受到了 "
+                  << adaptive_textcolor(theme.damage) << damage
+                  << adaptive_textcolor(theme.text) << " 点伤害，剩余HP：" << get_attribute("HP")
+                  << resetcolor() << std::endl;
+    }
     if (get_attribute("HP") == 0) {
-        if (!GetRule(BATTLE_WITHOUT_OUTPUT))
-            std::cout << textcolor(color::magenta) << bold() << name_ << " 被击败了！" << resetcolor() << std::endl;
+        if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+            const auto& theme = get_console_theme();
+            std::cout << adaptive_textcolor(theme.special) << bold() << name_
+                      << " 被击败了！" << resetcolor() << std::endl;
+        }
     }
 }
 
@@ -250,7 +279,7 @@ void character::setbasicattr() {
         uint64_t uh = std::abs(hashcode);
         setattribute("HP", 120 + (uh % 60), true);
         setattribute("MAX_HP", get_attribute("HP"), false); //复制最大生命
-        setattribute("MP", 20 + ((uh >> 7) % 20), true);
+        setattribute("MP", 20 + ((uh >> 7) % 40), true);
         setattribute("ATK", 30 + ((uh >> 1) % 20), true);
         setattribute("MATK", 30 + ((uh >> 6) % 20), true);
         setattribute("DEF", 10 + ((uh >> 2) % 10), true);
@@ -358,6 +387,17 @@ void character::apply_buffs() {
             if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
                 std::cout << textcolor(color::cyan) << name_
                     << " 获得 " << bonus_ap << " 点额外行动点！" << resetcolor() << std::endl;
+            }
+        }
+        else if (buff_name == "SELF_HEAL") {
+            // 血量回复
+            int heal_hp = std::min(effect, get_attribute("MAX_HP") - get_attribute("HP"));
+            setattribute("HP", heal_hp);
+            if(!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+                const auto& theme = get_console_theme();
+                std::cout << adaptive_textcolor(theme.text) << name_ << " 回复 "
+                          << adaptive_textcolor(theme.heal) << heal_hp
+                          << adaptive_textcolor(theme.text) << " 点生命！" << resetcolor() << std::endl;
             }
         }
     }
@@ -627,8 +667,35 @@ bool import_characters_from_json(const std::string& json_file_path) {
     }
 
     size_t array_start = content.find('[', char_start);
-    size_t array_end = content.find(']', array_start);
-    if (array_start == std::string::npos || array_end == std::string::npos) {
+    if (array_start == std::string::npos) {
+        std::cout << textcolor(color::red) << "错误：JSON 格式错误" << resetcolor() << std::endl;
+        return false;
+    }
+
+    size_t array_end = array_start;
+    int bracket_depth = 0;
+    bool in_string = false;
+    for (size_t i = array_start; i < content.size(); ++i) {
+        char ch = content[i];
+        if (ch == '"') {
+            bool escaped = false;
+            size_t j = i;
+            while (j > array_start && content[--j] == '\\') escaped = !escaped;
+            if (!escaped) in_string = !in_string;
+        }
+        if (in_string) continue;
+        if (ch == '[') {
+            bracket_depth++;
+        } else if (ch == ']') {
+            bracket_depth--;
+            if (bracket_depth == 0) {
+                array_end = i;
+                break;
+            }
+        }
+    }
+
+    if (array_end == array_start || bracket_depth != 0) {
         std::cout << textcolor(color::red) << "错误：JSON 格式错误" << resetcolor() << std::endl;
         return false;
     }
@@ -642,8 +709,29 @@ bool import_characters_from_json(const std::string& json_file_path) {
         obj_start = array_content.find('{', obj_start);
         if (obj_start == std::string::npos) break;
 
-        size_t obj_end = array_content.find('}', obj_start);
-        if (obj_end == std::string::npos) break;
+        size_t obj_end = obj_start;
+        int brace_depth = 0;
+        in_string = false;
+        for (size_t i = obj_start; i < array_content.size(); ++i) {
+            char ch = array_content[i];
+            if (ch == '"') {
+                bool escaped = false;
+                size_t j = i;
+                while (j > obj_start && array_content[--j] == '\\') escaped = !escaped;
+                if (!escaped) in_string = !in_string;
+            }
+            if (in_string) continue;
+            if (ch == '{') {
+                brace_depth++;
+            } else if (ch == '}') {
+                brace_depth--;
+                if (brace_depth == 0) {
+                    obj_end = i;
+                    break;
+                }
+            }
+        }
+        if (obj_end == obj_start) break;
 
         std::string obj_str = array_content.substr(obj_start + 1, obj_end - obj_start - 1);
 
@@ -694,6 +782,31 @@ bool import_characters_from_json(const std::string& json_file_path) {
                     data.attributes[attr] = value;
                 } catch (...) {
                     // 解析失败，跳过
+                }
+            }
+        }
+
+        // 查找 "actions" 字段（可选）
+        size_t actions_pos = obj_str.find("\"actions\"");
+        if (actions_pos != std::string::npos) {
+            size_t colon_pos = obj_str.find(':', actions_pos);
+            size_t array_start = obj_str.find('[', colon_pos);
+            size_t array_end = obj_str.find(']', array_start);
+            if (array_start != std::string::npos && array_end != std::string::npos) {
+                std::string actions_str = obj_str.substr(array_start + 1, array_end - array_start - 1);
+                
+                // 分割动作名称
+                size_t pos = 0;
+                while (true) {
+                    size_t quote_start = actions_str.find('\"', pos);
+                    if (quote_start == std::string::npos) break;
+                    size_t quote_end = actions_str.find('\"', quote_start + 1);
+                    if (quote_end == std::string::npos) break;
+                    
+                    std::string action_name = actions_str.substr(quote_start + 1, quote_end - quote_start - 1);
+                    data.actions.push_back(action_name);
+                    
+                    pos = quote_end + 1;
                 }
             }
         }
