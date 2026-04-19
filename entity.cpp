@@ -757,7 +757,7 @@ bool import_characters_from_json(const std::string& json_file_path) {
             size_t quote_start = obj_str.find('\"', colon_pos);
             size_t quote_end = obj_str.find('\"', quote_start + 1);
             if (quote_start != std::string::npos && quote_end != std::string::npos) {
-                data.name = obj_str.substr(quote_start + 1, quote_end - quote_start - 1);
+                data.name = Utf8ToAnsi( obj_str.substr(quote_start + 1, quote_end - quote_start - 1));
             }
         }
 

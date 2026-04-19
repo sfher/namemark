@@ -16,6 +16,7 @@ struct SkillData {
     int acquire_chance = 100;       // 习得概率
     int weight = 5;                 // AI 选择权重
     int base_probability = 100;     // 技能成功率
+    std::string description;        // 技能描述
 
     std::unordered_map<std::string, int> consume;
     TargetType target_type = TargetType::SINGLE_ENEMY_LOWEST_HP;

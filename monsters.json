@@ -1,0 +1,89 @@
+﻿{
+  "monsters": [
+    {
+      "id": "slime",
+      "name": "史莱姆",
+      "attributes": {
+        "HP": 80,
+        "MAX_HP": 80,
+        "MP": 0,
+        "ATK": 25,
+        "DEF": 10,
+        "MATK": 15,
+        "SPD": 20,
+        "CRIT": 5,
+        "CRIT_D": 150,
+        "C_AP": 20
+      },
+      "actions": [ "attack" ]
+    },
+    {
+      "id": "goblin",
+      "name": "哥布林",
+      "attributes": {
+        "HP": 110,
+        "MAX_HP": 110,
+        "MP": 10,
+        "ATK": 35,
+        "DEF": 15,
+        "MATK": 20,
+        "SPD": 30,
+        "CRIT": 10,
+        "CRIT_D": 150,
+        "C_AP": 25
+      },
+      "actions": [ "attack", "smash" ]
+    },
+    {
+      "id": "goblin_warrior",
+      "name": "哥布林战士",
+      "attributes": {
+        "HP": 160,
+        "MAX_HP": 160,
+        "MP": 20,
+        "ATK": 45,
+        "DEF": 20,
+        "MATK": 20,
+        "SPD": 25,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 30
+      },
+      "actions": [ "attack", "smash", "combo" ]
+    },
+    {
+      "id": "orc_warrior",
+      "name": "兽人战士",
+      "attributes": {
+        "HP": 250,
+        "MAX_HP": 250,
+        "MP": 0,
+        "ATK": 60,
+        "DEF": 25,
+        "MATK": 10,
+        "SPD": 20,
+        "CRIT": 10,
+        "CRIT_D": 200,
+        "C_AP": 30
+      },
+      "actions": [ "attack", "smash", "lifesteal" ]
+    },
+    {
+      "id": "orc_shaman",
+      "name": "兽人萨满",
+      "attributes": {
+        "HP": 150,
+        "MAX_HP": 150,
+        "MP": 80,
+        "ATK": 20,
+        "DEF": 15,
+        "MATK": 55,
+        "SPD": 30,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 35
+      },
+      "actions": [ "magic_missile", "heal_magic", "poison_magic" ]
+    }
+  ]
+}

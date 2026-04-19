@@ -167,4 +167,6 @@ namespace customio {
 
 } // namespace customio
 
+std::string Utf8ToAnsi(const std::string& utf8_str);
+
 #endif

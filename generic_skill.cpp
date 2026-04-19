@@ -1,9 +1,10 @@
 ﻿// generic_skill.cpp
 #include "generic_skill.h"
 #include "skill_executor.h"
+#include "customio.h"
 
 GenericSkill::GenericSkill(const SkillData& data)
-    : act(data.base_probability), data_(data)
+    : act(data.base_probability), data_(data), description_(data.description)
 {
     name_ = data.display_name;
     for (const auto& pair : data.consume) {
@@ -14,7 +15,6 @@ GenericSkill::GenericSkill(const SkillData& data)
 
 bool GenericSkill::can_execute(const character* c, const FightContext& ctx) const {
     if (!act::can_execute(c, ctx)) return false;
-    // 额外检查（如敌人是否存在）
     switch (data_.target_type) {
     case TargetType::SINGLE_ENEMY_LOWEST_HP:
     case TargetType::SINGLE_ENEMY_RANDOM:
@@ -40,34 +40,33 @@ bool GenericSkill::execute(character* c, FightContext& ctx) {
         return SkillExecutor::execute_single_target_damage(
             c, ctx, consume_, data_.target_type,
             data_.hit_rate, data_.dmg_formula, data_.dmg_coeff,
-            name_, data_.use_def, data_.on_hit_buffs, nullptr
-        );
+            name_, data_.use_def, data_.on_hit_buffs, nullptr,
+            description_);
 
     case SkillData::Type::AOE_DAMAGE:
         return SkillExecutor::execute_aoe_damage(
             c, ctx, consume_, data_.target_type,
             data_.hit_rate, data_.dmg_formula, data_.dmg_coeff,
             name_, data_.use_def, data_.on_hit_buffs,
-            data_.split_damage, nullptr
-        );
+            data_.split_damage, nullptr,
+            description_);
 
     case SkillData::Type::HEAL:
         if (data_.heal_func) {
             return SkillExecutor::execute_heal(
                 c, ctx, consume_, data_.target_type,
-                name_, data_.heal_func
-            );
+                name_, data_.heal_func,
+                description_);
         }
         return false;
 
     case SkillData::Type::SELF_BUFF:
         return SkillExecutor::execute_self_buff(
             c, ctx, consume_, name_,
-            data_.self_buffs, data_.attr_modifiers
-        );
+            data_.self_buffs, data_.attr_modifiers,
+            description_);
 
     case SkillData::Type::CUSTOM:
-        // CUSTOM 类型不应该通过 GenericSkill 调用
         return false;
     }
     return false;

@@ -1,23 +1,18 @@
-﻿#include "entity.h"
+﻿// namemark_version1.4.cpp
+#include "entity.h"
 #include "customio.h"
 #include "act.h"
-#include "console.h" 
-#include "damage_calculator.h"
-#include "skill_executor.h"
+#include "game.h"        // 新增
 #include <windows.h>
-using namespace customio;
-// ... 其他头文件
 
-void test() {
-    
-}
+using namespace customio;
 
 int main() {
-    //修改控制台标题
     SetConsoleTitleA("Namemark");
-    system("mode con cols=90 lines=90"); // 设置控制台大小
-	init_console(); 
+    //system("mode con cols=120 lines=40"); 失去缓冲区还是太可怕了
+    init_console();
     registerAllSkills();
-    debug_console();
+    // 启动游戏
+    Game::getInstance().run();
     return 0;
 }

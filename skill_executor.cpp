@@ -2,8 +2,8 @@
 #define NOMINMAX
 #include <Windows.h>    // for Sleep
 
-#include "skill_executor.h"   // 必须包含自己的头文件
-#include "act.h"              // 提供 act 类的完整定义（用于 TempAct）
+#include "skill_executor.h"
+#include "act.h"
 #include "damage_calculator.h"
 #include "customio.h"
 #include "entity.h"
@@ -13,8 +13,6 @@
 #include <functional>
 
 using namespace customio;
-
-// ... 其余实现不变
 
 // ---------- 通用辅助函数实现 ----------
 
@@ -27,7 +25,6 @@ bool SkillExecutor::deduct_cost(
     for (const auto& pair : consume) {
         int old = caster->get_attribute(pair.first);
         if (old < pair.second) {
-            // 资源不足，不应发生（can_execute 已检查）
             return false;
         }
         caster->setattribute(pair.first, old - pair.second, false);
@@ -40,24 +37,25 @@ std::vector<character*> SkillExecutor::get_targets(
     character* caster,
     TargetType target_type)
 {
-    // 临时创建一个 act 对象来调用 get_targets（或重构为静态函数）
-    // 简便方法：创建一个临时 act 对象，设置目标类型后调用
     class TempAct : public act {
     public:
         TempAct(TargetType t) { set_target_type(t); }
         bool execute(character*, FightContext&) override { return true; }
-        using act::get_targets;  // 暴露 protected 方法
+        using act::get_targets;
     };
     TempAct temp(target_type);
     return temp.get_targets(ctx, caster);
 }
 
-void SkillExecutor::log_action(character* caster, const std::string& action_name) {
+void SkillExecutor::log_action(character* caster, const std::string& action_name, const std::string& description) {
     if (!caster || caster->GetRule(BATTLE_WITHOUT_OUTPUT)) return;
     const auto& theme = get_console_theme();
     std::cout << adaptive_textcolor(theme.attack)
         << caster->get_name() << " 使用了 " << action_name << "！"
         << resetcolor() << std::endl;
+    if (!description.empty()) {
+        std::cout << "  → " << description << std::endl;
+    }
     Sleep(150);
 }
 
@@ -75,16 +73,10 @@ void SkillExecutor::apply_damage_and_buffs(
     std::function<void(character*, character*, int)> on_hit_callback)
 {
     if (!caster || !target) return;
-
-    // 造成伤害
     target->take_damage(damage);
-
-    // 施加 Buff
     for (const auto& buff : buffs) {
         target->add_buff(buff.buff_name, buff.effect, buff.duration);
     }
-
-    // 自定义回调（例如吸血、额外效果）
     if (on_hit_callback) {
         on_hit_callback(caster, target, damage);
     }
@@ -103,7 +95,8 @@ bool SkillExecutor::execute_single_target_damage(
     const std::string& action_name,
     bool use_def,
     const std::vector<BuffApplication>& on_hit_buffs,
-    std::function<void(character*, character*, int)> on_hit_callback)
+    std::function<void(character*, character*, int)> on_hit_callback,
+    const std::string& description)
 {
     if (!caster) return false;
 
@@ -115,8 +108,8 @@ bool SkillExecutor::execute_single_target_damage(
     if (targets.empty()) return false;
     character* target = targets[0];
 
-    // 3. 日志
-    log_action(caster, action_name);
+    // 3. 日志（带描述）
+    log_action(caster, action_name, description);
 
     // 4. 命中判定
     if (!hit_check(caster, hit_rate)) {
@@ -126,7 +119,7 @@ bool SkillExecutor::execute_single_target_damage(
                 << caster->get_name() << " 的攻击落空了！"
                 << resetcolor() << std::endl;
         }
-        return true;  // 消耗了资源但未命中，仍算执行成功
+        return true;
     }
 
     // 5. 伤害计算
@@ -153,7 +146,8 @@ bool SkillExecutor::execute_aoe_damage(
     bool use_def,
     const std::vector<BuffApplication>& on_hit_buffs,
     bool split_damage,
-    std::function<void(character*, character*, int)> on_hit_callback)
+    std::function<void(character*, character*, int)> on_hit_callback,
+    const std::string& description)
 {
     if (!caster) return false;
 
@@ -165,7 +159,7 @@ bool SkillExecutor::execute_aoe_damage(
     if (targets.empty()) return false;
 
     // 3. 日志
-    log_action(caster, action_name);
+    log_action(caster, action_name, description);
 
     // 4. 计算原始总伤害（若分摊）
     int total_raw_atk = 0;
@@ -177,7 +171,6 @@ bool SkillExecutor::execute_aoe_damage(
     for (character* target : targets) {
         if (!target->is_alive()) continue;
 
-        // 命中判定
         if (!hit_check(caster, hit_rate)) {
             if (!caster->GetRule(BATTLE_WITHOUT_OUTPUT)) {
                 const auto& theme = get_console_theme();
@@ -190,12 +183,10 @@ bool SkillExecutor::execute_aoe_damage(
 
         int final_damage;
         if (split_damage) {
-            // 分摊：每个目标受到均分伤害
             int per_target_raw = std::max(1, total_raw_atk / static_cast<int>(targets.size()));
             final_damage = DamageCalculator::calculate_final_damage(caster, target, per_target_raw, use_def);
         }
         else {
-            // 独立计算
             int raw = DamageCalculator::calculate_raw_attack(caster, dmg_formula, dmg_coeff);
             final_damage = DamageCalculator::calculate_final_damage(caster, target, raw, use_def);
         }
@@ -214,22 +205,19 @@ bool SkillExecutor::execute_heal(
     const std::unordered_map<std::string, int>& consume,
     TargetType target_type,
     const std::string& action_name,
-    std::function<int(character*, character*)> heal_amount_func)
+    std::function<int(character*, character*)> heal_amount_func,
+    const std::string& description)
 {
     if (!caster) return false;
 
-    // 1. 扣费
     if (!deduct_cost(caster, consume, ctx)) return false;
 
-    // 2. 索敌
     std::vector<character*> targets = get_targets(ctx, caster, target_type);
     if (targets.empty()) return false;
     character* target = targets[0];
 
-    // 3. 日志
-    log_action(caster, action_name);
+    log_action(caster, action_name, description);
 
-    // 4. 计算治疗量
     int heal_amount = heal_amount_func(caster, target);
     int current_hp = target->get_attribute("HP");
     int max_hp = target->get_attribute("MAX_HP");
@@ -238,7 +226,6 @@ bool SkillExecutor::execute_heal(
 
     target->setattribute("HP", new_hp, false);
 
-    // 5. 输出治疗日志
     if (!caster->GetRule(BATTLE_WITHOUT_OUTPUT)) {
         const auto& theme = get_console_theme();
         std::cout << adaptive_textcolor(theme.text) << target->get_name() << " 恢复了 "
@@ -259,23 +246,20 @@ bool SkillExecutor::execute_self_buff(
     const std::unordered_map<std::string, int>& consume,
     const std::string& action_name,
     const std::vector<BuffApplication>& buffs_to_apply,
-    const std::unordered_map<std::string, int>& attr_modifiers)
+    const std::unordered_map<std::string, int>& attr_modifiers,
+    const std::string& description)
 {
     if (!caster) return false;
 
-    // 1. 扣费
     if (!deduct_cost(caster, consume, ctx)) return false;
 
-    // 2. 日志
-    log_action(caster, action_name);
+    log_action(caster, action_name, description);
 
-    // 3. 应用属性修改
     for (const auto& mod : attr_modifiers) {
         int old = caster->get_attribute(mod.first);
         caster->setattribute(mod.first, old + mod.second, false);
     }
 
-    // 4. 应用 Buff
     for (const auto& buff : buffs_to_apply) {
         caster->add_buff(buff.buff_name, buff.effect, buff.duration);
     }

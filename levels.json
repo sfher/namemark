@@ -1,0 +1,35 @@
+﻿{
+  "levels": [
+    {
+      "id": "forest_1",
+      "name": "初出茅庐",
+      "description": "森林边缘的史莱姆，似乎很容易对付。",
+      "max_allies": 2,
+      "enemies": [
+        { "preset_id": "slime" },
+        { "preset_id": "slime" }
+      ]
+    },
+    {
+      "id": "forest_2",
+      "name": "哥布林巡逻队",
+      "description": "三只哥布林手持木棒，虎视眈眈。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "goblin" },
+        { "preset_id": "goblin" },
+        { "preset_id": "goblin_warrior" }
+      ]
+    },
+    {
+      "id": "cave_1",
+      "name": "兽人营地",
+      "description": "强壮的兽人和他的萨满同伴。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "orc_warrior" },
+        { "preset_id": "orc_shaman" }
+      ]
+    }
+  ]
+}

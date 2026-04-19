@@ -13,4 +13,5 @@ public:
 
 private:
     SkillData data_;
+    std::string description_;
 };
