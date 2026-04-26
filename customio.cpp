@@ -31,7 +31,7 @@ namespace customio {
 #endif
     }
 
-    float g_battle_speed = 1.0f; // 默认正常速度
+    float g_battle_speed = 1.2f; // 默认正常速度
 
      void game_sleep(int milliseconds) {
         if (milliseconds <= 0) return;

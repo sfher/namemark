@@ -649,7 +649,11 @@ void debug_console() {
                     // 可选：再次输出具体加护类型（需要创建临时角色查看）
                     character c(name);
                     c.SetRule(SHOW_ATTRIBUTES, false);
-                    std::cout <<  name << std::endl; //不加其他格式，方便复制
+                    std::cout <<  name << ":";
+                    for (const auto& a : c.get_aegis()) {
+                        std::cout << " " << a;
+                    } 
+                    std::cout << std::endl;
                 }
             }
             std::cout << "==================================\n" << std::endl;
@@ -672,38 +676,114 @@ void debug_console() {
         }
         //寻找高分角色并输出测试结果
         if (line.substr(0, 6) == "/hfind") {
-            std::cout << "正在寻找高分角色（快速评分 >= 70）..." << std::endl;
-            std::vector<std::string> found_names;
-            int total_checked = 0;
+    // 参数解析：/hfind [快速评分门槛] [战斗评分门槛] [生成数量]
+    std::string args = trim(line.substr(6));
+    int quick_threshold = 70;      // 快速评分门槛
+    int battle_threshold = 70;     // 战斗测试门槛
+    int total_generate = 10000;    // 生成角色总数，默认10000
 
-            // 进度显示
-            customio::progress_bar bar(10000, 50, '=', ' ', true);
-
-            for (int i = 0; i < 10000; ++i) {
-                std::string name = random_string(8, 8);
-                double score = get_fast_score(name);
-                if (score >= 70.0) {
-                    found_names.push_back(name);
-                }
-                total_checked++;
-                bar.update(total_checked);
+    if (!args.empty()) {
+        std::stringstream ss(args);
+        std::string token;
+        std::vector<int> params;
+        while (std::getline(ss, token, ' ')) {
+            if (token.empty()) continue;
+            try {
+                params.push_back(std::stoi(token));
+            } catch (...) {
+                // 忽略非数字参数
             }
-            bar.finish();
+        }
+        if (params.size() >= 1) quick_threshold = params[0];
+        if (params.size() >= 2) battle_threshold = params[1];
+        if (params.size() >= 3) total_generate = params[2];
+    }
 
-            std::cout << "\n========== 高分角色检测结果 ==========" << std::endl;
-            std::cout << "总测试次数: " << total_checked << std::endl;
-            std::cout << "快速评分 >= 70 的角色数量: " << found_names.size() << std::endl;
-            if (!found_names.empty()) {
-                std::cout << "名单：" << std::endl;
-                for (const auto& name : found_names) {
-                    std::pair<double, std::string> report = evaluate_score(name);
-                    std::cout<< name << " : 快速评分 " << std::fixed << std::setprecision(1) << report.first << " Grade:" << report.second << std::endl;
-                }
+    std::cout << "开始两层筛选：快速评分 >= " << quick_threshold
+              << "，战斗测试 >= " << battle_threshold
+              << "，生成数量：" << total_generate << std::endl;
+
+    // 第一层：快速评分筛选
+    std::vector<std::string> candidates;
+    {
+        customio::progress_bar bar(total_generate, 50, '=', ' ', true);
+        for (int i = 0; i < total_generate; ++i) {
+            std::string name = random_string(8, 8);
+            double score = get_fast_score(name);
+            if (score >= quick_threshold) {
+                candidates.push_back(name);
             }
-            std::cout << "====================================\n" << std::endl;
-            continue;
-        } 
-        if (line.rfind("/settheme", 0) == 0) {
+            bar.update(i + 1);
+        }
+        bar.finish();
+    }
+
+    std::cout << "第一层筛选完成，共 " << candidates.size() << " 个角色进入战斗测试。\n";
+    if (candidates.empty()) {
+        std::cout << "没有角色通过快速评分筛选，请降低门槛。\n";
+        continue;
+    }
+
+    // 第二层：战斗模拟测试
+    struct CharacterRecord {
+        std::string name;
+        double quick_score;
+        BenchmarkReport report;
+    };
+    std::vector<CharacterRecord> finalists;
+    {
+        customio::progress_bar battle_bar(candidates.size(), 40, '=', ' ', true);
+        for (size_t i = 0; i < candidates.size(); ++i) {
+            const auto& name = candidates[i];
+            double quick = get_fast_score(name);
+            BenchmarkReport rep = evaluate_character_benchmark(name, 10); // 10场快速测试
+            if (rep.final_score >= battle_threshold) {
+                finalists.push_back({name, quick, rep});
+            }
+            battle_bar.update(i + 1);
+        }
+        battle_bar.finish();
+    }
+
+    // 按战斗评分降序排序
+    std::sort(finalists.begin(), finalists.end(),
+        [](const CharacterRecord& a, const CharacterRecord& b) {
+            return a.report.final_score > b.report.final_score;
+        });
+
+    std::cout << "\n========== 高强度角色检测结果 ==========" << std::endl;
+    std::cout << "经过两层筛选，共发现 " << finalists.size() << " 个强力角色：" << std::endl;
+    if (finalists.empty()) {
+        std::cout << "没有角色达到战斗测试标准。\n";
+    } else {
+        // 使用 printf 对齐表格
+        printf("%-22s %-10s %-10s %-6s %-8s %-8s %-8s\n",
+               "名字", "快速评分", "战斗评分", "等级", "1v1胜率", "1v2胜率", "1v3胜率");
+        std::cout << std::string(74, '-') << std::endl;
+
+        for (const auto& rec : finalists) {
+            const auto& rep = rec.report;
+            // 设置等级颜色
+            if (rep.grade == "S") std::cout << textcolor(color::red);
+            else if (rep.grade == "A") std::cout << textcolor(color::yellow);
+            else if (rep.grade == "B") std::cout << textcolor(color::green);
+            else std::cout << textcolor(color::cyan);
+
+            printf("%-22s %-10.1f %-10.1f %-6s ",
+                   rec.name.c_str(),
+                   rec.quick_score,
+                   rep.final_score,
+                   rep.grade.c_str());
+
+            std::cout << resetcolor();
+            printf("%-8.0f%% %-8.0f%% %-8.0f%%\n",
+                   rep.win_rate_1v1, rep.win_rate_1v2, rep.win_rate_1v3);
+        }
+    }
+    std::cout << "========================================\n" << std::endl;
+    continue;
+}
+            if (line.rfind("/settheme", 0) == 0) {
             std::string theme_name = trim(line.substr(9));
             if (theme_name.empty()) {
                 customio::interactive_theme_selector();
