@@ -16,6 +16,7 @@ enum class GameStateType {
     TEAM,
     ADVENTURE,
     CONSOLE,
+    SETTINGS,
     EXIT
 };
 

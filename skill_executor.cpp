@@ -1,6 +1,4 @@
 ﻿// skill_executor.cpp
-#define NOMINMAX
-#include <Windows.h>    // for Sleep
 
 #include "skill_executor.h"
 #include "act.h"
@@ -56,7 +54,7 @@ void SkillExecutor::log_action(character* caster, const std::string& action_name
     if (!description.empty()) {
         std::cout << "  → " << description << std::endl;
     }
-    Sleep(150);
+    game_sleep(200 * g_battle_speed);
 }
 
 bool SkillExecutor::hit_check(character* caster, int hit_rate) {
@@ -73,10 +71,15 @@ void SkillExecutor::apply_damage_and_buffs(
     std::function<void(character*, character*, int)> on_hit_callback)
 {
     if (!caster || !target) return;
-    target->take_damage(damage);
+
+    // 记录伤害
+    caster->damage_dealt += damage;
+    target->take_damage(damage, caster);
+
     for (const auto& buff : buffs) {
         target->add_buff(buff.buff_name, buff.effect, buff.duration);
     }
+
     if (on_hit_callback) {
         on_hit_callback(caster, target, damage);
     }
@@ -225,6 +228,7 @@ bool SkillExecutor::execute_heal(
     int actual_heal = new_hp - current_hp;
 
     target->setattribute("HP", new_hp, false);
+    caster->healing_done += actual_heal;   // 记录治疗量
 
     if (!caster->GetRule(BATTLE_WITHOUT_OUTPUT)) {
         const auto& theme = get_console_theme();
@@ -232,7 +236,7 @@ bool SkillExecutor::execute_heal(
             << adaptive_textcolor(theme.heal) << actual_heal
             << adaptive_textcolor(theme.text) << " 点生命值！当前HP: "
             << new_hp << "/" << max_hp << resetcolor() << std::endl;
-        Sleep(100);
+        game_sleep(200 * g_battle_speed);
     }
 
     return true;

@@ -1,4 +1,5 @@
 ﻿#include "customio.h"
+#include "console.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -28,6 +29,14 @@ namespace customio {
         dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         SetConsoleMode(hOut, dwMode);
 #endif
+    }
+
+    float g_battle_speed = 1.0f; // 默认正常速度
+
+     void game_sleep(int milliseconds) {
+        if (milliseconds <= 0) return;
+        auto adjusted = std::chrono::milliseconds(static_cast<int>(milliseconds * g_battle_speed));
+        std::this_thread::sleep_for(adjusted);
     }
 
     const console_theme default_console_theme = {
@@ -105,7 +114,7 @@ namespace customio {
         color::black    // title
     };
 
-    console_theme current_console_theme = light_theme;
+	console_theme current_console_theme = default_console_theme;
     // 主题选择接口
     void list_available_themes();                  // 列出所有可用主题
     bool set_theme_by_name(const std::string& theme_name); // 通过名称设置主题，返回是否成功
@@ -531,6 +540,47 @@ namespace customio {
         return dist(rng) <= probability;
     }
 
+  int menu_select(const std::vector<std::string>& items, const std::string& title) {
+    if (items.empty()) return -1;
+
+    const auto& theme = get_console_theme();
+    int selected = 0;
+    bool running = true;
+
+    auto redraw = [&]() {
+        clear_screen();
+        if (!title.empty()) {
+            std::cout << adaptive_textcolor(theme.title) << bold() << title << resetcolor() << std::endl;
+        }
+        for (size_t i = 0; i < items.size(); ++i) {
+            if (i == selected) {
+                std::cout << background(theme.prompt) << adaptive_textcolor(theme.background);
+            }
+            std::cout << "  " << (i == selected ? ">" : " ") << " " << items[i] << "  ";
+            if (i == selected) {
+                std::cout << resetcolor();
+            }
+            std::cout << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << "↑↓: 移动  Enter: 确认" << std::endl;
+    };
+
+    redraw();
+    while (running) {
+        int ch = _getch();
+        if (ch == 224) {
+            ch = _getch();
+            if (ch == 72 && selected > 0) selected--;
+            else if (ch == 80 && selected < (int)items.size() - 1) selected++;
+            redraw();
+        } else if (ch == 13) {
+            running = false;
+        }
+    }
+    return selected;
+}
+    
 } // namespace customio
 
 std::string Utf8ToAnsi(const std::string& utf8_str) {

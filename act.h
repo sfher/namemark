@@ -31,6 +31,7 @@ protected:
     TargetType target_type_ = TargetType::SINGLE_ENEMY_LOWEST_HP; // 默认策略
     bool hasSufficientResources(const character* c) const;
     bool checkProbability() const;
+    std::string description_;
 
 public:
     act(int probability = 100) : probability_(probability) {}
@@ -47,6 +48,9 @@ public:
 
 	std::unordered_map<std::string, int> get_consume() const { return consume_; }
     std::vector<character*> get_targets(const FightContext& ctx, character* caster) const;
+
+    void set_description(const std::string& desc) { description_ = desc; }
+    std::string get_description() const { return description_; }
 };
 
 //技能工厂
@@ -55,6 +59,7 @@ struct SkillInfo {
     int acquire_chance;
     int weight;
     std::function<std::unique_ptr<act>()> factory;
+    bool random_available = true;
 
     SkillInfo() = default;
     SkillInfo(const std::string& n, int chance, int w, std::function<std::unique_ptr<act>()> f)

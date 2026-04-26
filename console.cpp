@@ -166,8 +166,8 @@ BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int b
 
     if (report.final_score >= 85) report.grade = "S";
     else if (report.final_score >= 70) report.grade = "A";
-    else if (report.final_score >= 55) report.grade = "B";
-    else if (report.final_score >= 40) report.grade = "C";
+    else if (report.final_score >= 50) report.grade = "B";
+    else if (report.final_score >= 30) report.grade = "C";
     else report.grade = "D";
 
     character tmp(char_name);
@@ -649,11 +649,7 @@ void debug_console() {
                     // 可选：再次输出具体加护类型（需要创建临时角色查看）
                     character c(name);
                     c.SetRule(SHOW_ATTRIBUTES, false);
-                    std::cout <<  name << " : ";
-                    for (const auto& a : c.get_aegis()) {
-                        std::cout << a << " ";
-                    }
-                    std::cout << std::endl;
+                    std::cout <<  name << std::endl; //不加其他格式，方便复制
                 }
             }
             std::cout << "==================================\n" << std::endl;
@@ -676,7 +672,7 @@ void debug_console() {
         }
         //寻找高分角色并输出测试结果
         if (line.substr(0, 6) == "/hfind") {
-            std::cout << "正在寻找高分角色（快速评分 >= 64）..." << std::endl;
+            std::cout << "正在寻找高分角色（快速评分 >= 70）..." << std::endl;
             std::vector<std::string> found_names;
             int total_checked = 0;
 
@@ -686,7 +682,7 @@ void debug_console() {
             for (int i = 0; i < 10000; ++i) {
                 std::string name = random_string(8, 8);
                 double score = get_fast_score(name);
-                if (score >= 64.0) {
+                if (score >= 70.0) {
                     found_names.push_back(name);
                 }
                 total_checked++;
@@ -696,7 +692,7 @@ void debug_console() {
 
             std::cout << "\n========== 高分角色检测结果 ==========" << std::endl;
             std::cout << "总测试次数: " << total_checked << std::endl;
-            std::cout << "快速评分 >= 64 的角色数量: " << found_names.size() << std::endl;
+            std::cout << "快速评分 >= 70 的角色数量: " << found_names.size() << std::endl;
             if (!found_names.empty()) {
                 std::cout << "名单：" << std::endl;
                 for (const auto& name : found_names) {

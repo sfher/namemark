@@ -14,6 +14,7 @@ private:
     void add_new_character();
     void select_team();
     void list_characters();
+    void view_character_detail();
 
     std::unique_ptr<SelectionList> selection_list_;
 };

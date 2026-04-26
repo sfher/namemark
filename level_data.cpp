@@ -1,6 +1,7 @@
 ﻿// level_data.cpp
 #include "level_data.h"
 #include "json.hpp"
+#include "file_utils.h"
 #include "customio.h"
 #include <fstream>
 #include <iostream>
@@ -78,4 +79,16 @@ void LevelManager::unlock_next(int current_index) {
     if (next < (int)levels_.size()) {
         levels_[next].unlocked = true;
     }
+}
+
+bool LevelManager::load_from_directory(const std::string& dir_path) {
+    auto files = FileUtils::scan_directory(dir_path, ".json");
+    bool any_loaded = false;
+    for (const auto& file : files) {
+        std::cout << "[LevelManager] loading: " << file << std::endl;
+        if (load_from_json(file)) {
+            any_loaded = true;
+        }
+    }
+    return any_loaded;
 }

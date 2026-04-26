@@ -1,0 +1,113 @@
+{
+  "levels": [
+    {
+      "id": "campus_1",
+      "name": "走廊偶遇",
+      "description": "没有时间感慨冒险开始了，接下来登场的是：杜宇轩、陈政博。",
+      "max_allies": 2,
+      "enemies": [
+        { "preset_id": "dyx" },
+        { "preset_id": "czb" }
+      ]
+    },
+    {
+      "id": "campus_2",
+      "name": "数学担当",
+      "description": "没有时间悼念杜宇轩、陈政博了，接下来登场的是：涂智皓、席乾伟。",
+      "max_allies": 2,
+      "enemies": [
+        { "preset_id": "tzh" },
+        { "preset_id": "xqw" }
+      ]
+    },
+    {
+      "id": "campus_3",
+      "name": "足球四少",
+      "description": "没有时间悼念涂智皓、席乾伟了，接下来登场的是：胡家丰、胡昱、胡俊阳、胡智翔。",
+      "max_allies": 4,
+      "enemies": [
+        { "preset_id": "hjf" },
+        { "preset_id": "hy" },
+        { "preset_id": "hjy" },
+        { "preset_id": "hzx" }
+      ]
+    },
+    {
+      "id": "campus_4",
+      "name": "闺蜜双人组",
+      "description": "没有时间悼念足球四少了，接下来登场的是：吴若菲、沈欣。",
+      "max_allies": 2,
+      "enemies": [
+        { "preset_id": "wrf" },
+        { "preset_id": "sx" }
+      ]
+    },
+    {
+      "id": "campus_5",
+      "name": "开黑三人组",
+      "description": "没有时间悼念吴若菲、沈欣了，接下来登场的是：钱锦溢、陈泰米、马铄懿。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "qjy" },
+        { "preset_id": "ctm" },
+        { "preset_id": "msy" }
+      ]
+    },
+    {
+      "id": "campus_6",
+      "name": "篮球小分队",
+      "description": "没有时间悼念开黑三人组了，接下来登场的是：赵子涵、李奇锴。",
+      "max_allies": 2,
+      "enemies": [
+        { "preset_id": "zzh" },
+        { "preset_id": "lqk" }
+      ]
+    },
+    {
+      "id": "campus_7",
+      "name": "校园突击者",
+      "description": "没有时间悼念篮球小分队了，接下来登场的是：邵方恒、何辰谦、洪煜航。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "sfh" },
+        { "preset_id": "hcq" },
+        { "preset_id": "hyh" }
+      ]
+    },
+    {
+      "id": "campus_8",
+      "name": "中场强者",
+      "description": "没有时间悼念邵方恒、何辰谦、洪煜航了，接下来登场的是：申雨馨、田露晴、傅楚芮。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "syx" },
+        { "preset_id": "tlq" },
+        { "preset_id": "fcr" }
+      ]
+    },
+    {
+      "id": "campus_9",
+      "name": "精英先锋队",
+      "description": "没有时间悼念申雨馨、田露晴、傅楚芮了，接下来登场的是：朱峥齐、杨彬睿、翁智成。",
+      "max_allies": 3,
+      "enemies": [
+        { "preset_id": "zzq" },
+        { "preset_id": "ybr" },
+        { "preset_id": "wzc" }
+      ]
+    },
+    {
+      "id": "campus_10",
+      "name": "全班最终决战",
+      "description": "没有时间悼念精英先锋队了，接下来登场的是：陈逸行、金宇扬、冯柯源、周蔚然、应豪。",
+      "max_allies": 5,
+      "enemies": [
+        { "preset_id": "cyx" },
+        { "preset_id": "jyy" },
+        { "preset_id": "fky" },
+        { "preset_id": "zwr" },
+        { "preset_id": "yh" }
+      ]
+    }
+  ]
+}

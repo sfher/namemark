@@ -3,6 +3,7 @@
 #include "states/lobby_state.h"
 #include "states/team_state.h"
 #include "states/adventure_state.h"
+#include "states/setting_state.h"
 #include "customio.h"
 #include "console.h"
 #include <iostream>
@@ -39,6 +40,9 @@ void Game::changeState(GameStateType type) {
     case GameStateType::CONSOLE:
         debug_console();
         break;
+    case GameStateType::SETTINGS:
+        current_state_ = std::make_unique<SettingsState>(ctx_);
+        break;
     case GameStateType::EXIT:
         running_ = false;
         return;
@@ -50,13 +54,10 @@ void Game::changeState(GameStateType type) {
 }
 
 void Game::run() {
-    // 关卡已在构造函数中加载，此处不再重复加载
     changeState(GameStateType::LOBBY);
     while (running_ && current_state_) {
         clear_screen();
         current_state_->update();
         if (!running_) break;
-        std::cout << "\n按任意键继续...";
-        _getch();
     }
 }

@@ -1,4 +1,5 @@
-﻿#ifndef ENTITY_H_
+﻿// entity.h
+#ifndef ENTITY_H_
 #define ENTITY_H_
 
 #include <string>
@@ -12,6 +13,8 @@
 
 class act;
 struct FightContext;
+class Team;
+class character;                // 必须前向声明，stereotype 要用到 character*
 
 enum rule {
     SUMMON_BASIC_ATTR = 0x01,
@@ -45,19 +48,17 @@ public:
     }
 };
 
-class Team;
-
 class character : public stereotype {
 private:
-    int calculate_damage(character& target);  // 保留用于评分系统，可废弃
-    static std::mt19937& get_random_engine(); // 保留用于评分系统
+    int calculate_damage(character& target);
+    static std::mt19937& get_random_engine();
 
     std::string name_ = "character";
     int64_t hashcode = 0;
     std::unordered_map<std::string, std::pair<int, bool>> attribute_{};
-    std::vector<std::string> aegis; //神之庇护
-    std::vector<std::unique_ptr<act>> actions_;  // 行为列表
-    std::unordered_map<std::string, std::pair<int, int>> buffs_; // buff系统: buff名字 -> {效果值, 剩余时间}
+    std::vector<std::string> aegis;
+    std::vector<std::unique_ptr<act>> actions_;
+    std::unordered_map<std::string, std::pair<int, int>> buffs_;
 
 public:
     character();
@@ -70,23 +71,32 @@ public:
     std::string get_name() const override;
     void set_name(std::string name);
     bool is_alive() const override;
-    void take_damage(int damage) override;
-    void attack(entity& target) override;   // 保留用于评分系统
+    void take_damage(int damage) override;                // 基类要求
+    void take_damage(int damage, character* attacker);    // 重载版本，用于统计
+    void attack(entity& target) override;
     void setbasicattr();
     void outputattr();
-    void setaegis(); //设置加护
-    // Buff系统接口
-    void add_buff(const std::string& buff_name, int effect, int duration);  // 添加buff
-    void apply_buffs();                                                      // 应用buff效果（减伤、毒伤等）
-    void update_buffs();                                                     // 更新buff持续时间（每回合递减）
-    // 新行为系统
-    void init_default_actions();            // 初始化默认行为
-    bool do_action(FightContext& ctx);            // 执行回合行为，返回是否执行了动作
-        void add_action(std::unique_ptr<act> action) { actions_.push_back(std::move(action)); }
-        const std::vector<std::unique_ptr<act>>& get_actions() const { return actions_; }
+    void setaegis();
+    void add_buff(const std::string& buff_name, int effect, int duration);
+    void apply_buffs();
+    void update_buffs();
+    void init_default_actions();
+    bool do_action(FightContext& ctx);
+    void add_action(std::unique_ptr<act> action) { actions_.push_back(std::move(action)); }
+    const std::vector<std::unique_ptr<act>>& get_actions() const { return actions_; }
     std::vector<std::unique_ptr<act>>& get_actions() { return actions_; }
     bool has_aegis() const { return !aegis.empty(); }
     std::vector<std::string> get_aegis() const { return aegis; }
+
+    // ---------- 战斗统计 ----------
+    int damage_dealt = 0;
+    int damage_taken = 0;
+    int kills = 0;
+    int healing_done = 0;
+
+    void reset_stats() {
+        damage_dealt = damage_taken = kills = healing_done = 0;
+    }
 };
 
 class Team {
@@ -147,18 +157,13 @@ private:
 struct ImportedCharacterData {
     std::string name;
     std::unordered_map<std::string, int> attributes;
-    std::vector<std::string> actions;  // 行为列表，如果为空则使用预设
+    std::vector<std::string> actions;
 };
 
 extern std::unordered_map<std::string, ImportedCharacterData> imported_characters;
 
-// 从 JSON 文件导入角色数据
 bool import_characters_from_json(const std::string& json_file_path);
-
-// 检查是否有已导入的角色数据
 bool has_imported_character(const std::string& char_id);
-
-// 获取已导入的角色数据
 const ImportedCharacterData* get_imported_character(const std::string& char_id);
 
 #endif

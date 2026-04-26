@@ -1,0 +1,265 @@
+﻿{
+  "monsters": [
+    {
+      "id": "dyx",
+      "name": "杜宇轩",
+      "attributes": {
+        "HP": 117, "MAX_HP": 117, "MP": 26, "ATK": 33, "DEF": 21,
+        "MATK": 18, "SPD": 21, "CRIT": 7, "CRIT_D": 105, "C_AP": 21
+      },
+      "actions": ["smash", "headbutt"]
+    },
+    {
+      "id": "czb",
+      "name": "陈政博",
+      "attributes": {
+        "HP": 145, "MAX_HP": 145, "MP": 39, "ATK": 29, "DEF": 23,
+        "MATK": 36, "SPD": 21, "CRIT": 8, "CRIT_D": 104, "C_AP": 23
+      },
+      "actions": ["magic_missile", "mind_blast"]
+    },
+    {
+      "id": "tzh",
+      "name": "涂智皓",
+      "attributes": {
+        "HP": 130, "MAX_HP": 130, "MP": 29, "ATK": 39, "DEF": 18,
+        "MATK": 20, "SPD": 23, "CRIT": 10, "CRIT_D": 111, "C_AP": 21
+      },
+      "actions": ["smash", "backstab"]
+    },
+    {
+      "id": "xqw",
+      "name": "席乾伟",
+      "attributes": {
+        "HP": 124, "MAX_HP": 124, "MP": 42, "ATK": 23, "DEF": 16,
+        "MATK": 38, "SPD": 22, "CRIT": 8, "CRIT_D": 104, "C_AP": 22
+      },
+      "actions": ["magic_missile", "arcane_explosion"]
+    },
+    {
+      "id": "hjf",
+      "name": "胡家丰",
+      "attributes": {
+        "HP": 195, "MAX_HP": 195, "MP": 20, "ATK": 26, "DEF": 33,
+        "MATK": 13, "SPD": 14, "CRIT": 3, "CRIT_D": 98, "C_AP": 17
+      },
+      "actions": ["attack", "stone_skin", "defense"]
+    },
+    {
+      "id": "hy",
+      "name": "胡昱",
+      "attributes": {
+        "HP": 111, "MAX_HP": 111, "MP": 39, "ATK": 21, "DEF": 18,
+        "MATK": 34, "SPD": 20, "CRIT": 7, "CRIT_D": 102, "C_AP": 20
+      },
+      "actions": ["poison_magic", "drain_touch"]
+    },
+    {
+      "id": "hjy",
+      "name": "胡俊阳",
+      "attributes": {
+        "HP": 137, "MAX_HP": 137, "MP": 36, "ATK": 34, "DEF": 21,
+        "MATK": 33, "SPD": 21, "CRIT": 8, "CRIT_D": 106, "C_AP": 21
+      },
+      "actions": ["smash", "magic_punch"]
+    },
+    {
+      "id": "hzx",
+      "name": "胡智翔",
+      "attributes": {
+        "HP": 130, "MAX_HP": 130, "MP": 29, "ATK": 38, "DEF": 20,
+        "MATK": 23, "SPD": 22, "CRIT": 10, "CRIT_D": 111, "C_AP": 21
+      },
+      "actions": ["combo", "berserk"]
+    },
+    {
+      "id": "wrf",
+      "name": "吴若菲",
+      "attributes": {
+        "HP": 91, "MAX_HP": 91, "MP": 39, "ATK": 21, "DEF": 14,
+        "MATK": 32, "SPD": 23, "CRIT": 7, "CRIT_D": 102, "C_AP": 18
+      },
+      "actions": ["frost_bolt", "throw_sand"]
+    },
+    {
+      "id": "sx",
+      "name": "沈欣",
+      "attributes": {
+        "HP": 85, "MAX_HP": 85, "MP": 36, "ATK": 18, "DEF": 13,
+        "MATK": 29, "SPD": 21, "CRIT": 5, "CRIT_D": 99, "C_AP": 18
+      },
+      "actions": ["frost_bolt", "drain_touch"]
+    },
+    {
+      "id": "qjy",
+      "name": "钱锦溢",
+      "attributes": {
+        "HP": 98, "MAX_HP": 98, "MP": 26, "ATK": 25, "DEF": 16,
+        "MATK": 25, "SPD": 18, "CRIT": 5, "CRIT_D": 101, "C_AP": 18
+      },
+      "actions": ["headbutt", "frost_bolt"]
+    },
+    {
+      "id": "ctm",
+      "name": "陈泰米",
+      "attributes": {
+        "HP": 91, "MAX_HP": 91, "MP": 26, "ATK": 27, "DEF": 14,
+        "MATK": 20, "SPD": 23, "CRIT": 8, "CRIT_D": 106, "C_AP": 18
+      },
+      "actions": ["backstab", "throw_sand"]
+    },
+    {
+      "id": "msy",
+      "name": "马铄懿",
+      "attributes": {
+        "HP": 117, "MAX_HP": 117, "MP": 29, "ATK": 26, "DEF": 21,
+        "MATK": 26, "SPD": 18, "CRIT": 5, "CRIT_D": 102, "C_AP": 18
+      },
+      "actions": ["drain_touch", "echo_strike"]
+    },
+    {
+      "id": "zzh",
+      "name": "赵子涵",
+      "attributes": {
+        "HP": 98, "MAX_HP": 98, "MP": 36, "ATK": 20, "DEF": 16,
+        "MATK": 29, "SPD": 21, "CRIT": 7, "CRIT_D": 101, "C_AP": 18
+      },
+      "actions": ["frost_bolt", "drain_touch"]
+    },
+    {
+      "id": "lqk",
+      "name": "李奇锴",
+      "attributes": {
+        "HP": 117, "MAX_HP": 117, "MP": 23, "ATK": 25, "DEF": 21,
+        "MATK": 17, "SPD": 17, "CRIT": 5, "CRIT_D": 100, "C_AP": 17
+      },
+      "actions": ["headbutt", "defense"]
+    },
+    {
+      "id": "sfh",
+      "name": "邵方恒",
+      "attributes": {
+        "HP": 104, "MAX_HP": 104, "MP": 26, "ATK": 29, "DEF": 17,
+        "MATK": 20, "SPD": 25, "CRIT": 8, "CRIT_D": 106, "C_AP": 20
+      },
+      "actions": ["whirlwind", "headbutt"]
+    },
+    {
+      "id": "hcq",
+      "name": "何辰谦",
+      "attributes": {
+        "HP": 98, "MAX_HP": 98, "MP": 29, "ATK": 27, "DEF": 16,
+        "MATK": 26, "SPD": 26, "CRIT": 10, "CRIT_D": 111, "C_AP": 21
+      },
+      "actions": ["backstab", "throw_sand"]
+    },
+    {
+      "id": "hyh",
+      "name": "洪煜航",
+      "attributes": {
+        "HP": 111, "MAX_HP": 111, "MP": 42, "ATK": 23, "DEF": 17,
+        "MATK": 33, "SPD": 20, "CRIT": 7, "CRIT_D": 103, "C_AP": 20
+      },
+      "actions": ["frost_bolt", "mind_blast"]
+    },
+    {
+      "id": "syx",
+      "name": "申雨馨",
+      "attributes": {
+        "HP": 104, "MAX_HP": 104, "MP": 52, "ATK": 18, "DEF": 18,
+        "MATK": 34, "SPD": 21, "CRIT": 3, "CRIT_D": 101, "C_AP": 20
+      },
+      "actions": ["heal_magic", "stone_skin"]
+    },
+    {
+      "id": "tlq",
+      "name": "田露晴",
+      "attributes": {
+        "HP": 107, "MAX_HP": 107, "MP": 44, "ATK": 21, "DEF": 17,
+        "MATK": 33, "SPD": 19, "CRIT": 5, "CRIT_D": 100, "C_AP": 19
+      },
+      "actions": ["mind_blast", "drain_touch"]
+    },
+    {
+      "id": "fcr",
+      "name": "傅楚芮",
+      "attributes": {
+        "HP": 156, "MAX_HP": 156, "MP": 26, "ATK": 25, "DEF": 26,
+        "MATK": 18, "SPD": 16, "CRIT": 5, "CRIT_D": 102, "C_AP": 17
+      },
+      "actions": ["stone_skin", "defense"]
+    },
+    {
+      "id": "zzq",
+      "name": "朱峥齐",
+      "attributes": {
+        "HP": 117, "MAX_HP": 117, "MP": 27, "ATK": 32, "DEF": 18,
+        "MATK": 17, "SPD": 20, "CRIT": 8, "CRIT_D": 106, "C_AP": 20
+      },
+      "actions": ["heavy_strike", "borrow_power"]
+    },
+    {
+      "id": "ybr",
+      "name": "杨彬睿",
+      "attributes": {
+        "HP": 91, "MAX_HP": 91, "MP": 26, "ATK": 27, "DEF": 16,
+        "MATK": 21, "SPD": 28, "CRIT": 10, "CRIT_D": 111, "C_AP": 21
+      },
+      "actions": ["backstab", "reckless_charge"]
+    },
+    {
+      "id": "wzc",
+      "name": "翁智成",
+      "attributes": {
+        "HP": 124, "MAX_HP": 124, "MP": 46, "ATK": 25, "DEF": 18,
+        "MATK": 38, "SPD": 21, "CRIT": 8, "CRIT_D": 106, "C_AP": 21
+      },
+      "actions": ["chain_lightning", "magic_missile"]
+    },
+    {
+      "id": "cyx",
+      "name": "陈逸行",
+      "attributes": {
+        "HP": 208, "MAX_HP": 208, "MP": 52, "ATK": 46, "DEF": 30,
+        "MATK": 46, "SPD": 25, "CRIT": 13, "CRIT_D": 118, "C_AP": 26
+      },
+      "actions": ["smash", "arcane_explosion", "iron_wall"]
+    },
+    {
+      "id": "jyy",
+      "name": "金宇扬",
+      "attributes": {
+        "HP": 130, "MAX_HP": 130, "MP": 49, "ATK": 25, "DEF": 20,
+        "MATK": 39, "SPD": 22, "CRIT": 8, "CRIT_D": 106, "C_AP": 21
+      },
+      "actions": ["lightning", "mind_blast"]
+    },
+    {
+      "id": "fky",
+      "name": "冯柯源",
+      "attributes": {
+        "HP": 130, "MAX_HP": 130, "MP": 51, "ATK": 23, "DEF": 20,
+        "MATK": 41, "SPD": 21, "CRIT": 9, "CRIT_D": 106, "C_AP": 22
+      },
+      "actions": ["arcane_explosion", "magic_missile"]
+    },
+    {
+      "id": "zwr",
+      "name": "周蔚然",
+      "attributes": {
+        "HP": 117, "MAX_HP": 117, "MP": 36, "ATK": 28, "DEF": 18,
+        "MATK": 29, "SPD": 20, "CRIT": 7, "CRIT_D": 102, "C_AP": 20
+      },
+      "actions": ["heavy_strike", "frost_bolt"]
+    },
+    {
+      "id": "yh",
+      "name": "应豪",
+      "attributes": {
+        "HP": 98, "MAX_HP": 98, "MP": 26, "ATK": 27, "DEF": 16,
+        "MATK": 18, "SPD": 23, "CRIT": 8, "CRIT_D": 106, "C_AP": 18
+      },
+      "actions": ["reckless_charge", "headbutt"]
+    }
+  ]
+}

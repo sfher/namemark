@@ -11,6 +11,7 @@ GenericSkill::GenericSkill(const SkillData& data)
         set_consume(pair.first, pair.second);
     }
     set_target_type(data.target_type);
+    set_description(data.description);
 }
 
 bool GenericSkill::can_execute(const character* c, const FightContext& ctx) const {

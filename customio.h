@@ -10,6 +10,10 @@
 #include <random>
 
 namespace customio {
+    //延时工具
+    extern float g_battle_speed;   // 全局战斗速度倍率
+    void game_sleep(int milliseconds);
+
     //随机工具
     std::mt19937& get_random_engine();
     bool chance(int percent);           // 整数百分比，如 30 表示 30%
@@ -80,6 +84,8 @@ namespace customio {
     void move_left(int cols = 1);
     void clear_line(); // 清除当前行
     void clear_screen();
+
+    int menu_select(const std::vector<std::string>& items, const std::string& title = "");
 
     // ---------- 打字机效果 ----------
     class slow_printer {

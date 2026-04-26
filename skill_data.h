@@ -37,6 +37,8 @@ struct SkillData {
     bool use_def = true;
     bool split_damage = false;      // 仅 AOE 有效
 
+    bool random_available = true;   // 是否可被随机选中（AI 习得后）
+
     // Buff 列表
     std::vector<BuffApplication> on_hit_buffs;
     std::vector<BuffApplication> self_buffs;
