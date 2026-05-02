@@ -1,0 +1,34 @@
+{
+  "single_cost": 300,
+  "ten_cost": 2800,
+  "pools": {
+    "SSR": {
+      "rate": 0.04,
+      "items": [
+        {"type": "character", "preset_id": "ichigo"},
+        {"type": "character", "preset_id": "ulquiorra"},
+        {"type": "weapon", "weapon_id": "zangetsu_bankai"},
+        {"type": "weapon", "weapon_id": "hyorinmaru_bankai"}
+      ]
+    },
+    "SR": {
+      "rate": 0.18,
+      "items": [
+        {"type": "character", "preset_id": "rukia"},
+        {"type": "character", "preset_id": "orihime"},
+        {"type": "character", "preset_id": "hitsugaya"},
+        {"type": "weapon", "weapon_id": "zangetsu_shikai"},
+        {"type": "weapon", "weapon_id": "hyorinmaru_shikai"}
+      ]
+    },
+    "R": {
+      "rate": 0.78,
+      "items": [
+        {"type": "character", "preset_id": "ishida"},
+        {"type": "character", "preset_id": "sado"},
+        {"type": "weapon", "weapon_id": "zanpakuto_basic"},
+        {"type": "weapon", "weapon_id": "zanpakuto_shikai"}
+      ]
+    }
+  }
+}

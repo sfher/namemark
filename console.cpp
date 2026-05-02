@@ -12,8 +12,6 @@
 #include <random>
 #include <chrono>
 #include <iomanip>
-#define NOMINMAX
-#include <windows.h>  // for Sleep
 
 using namespace customio;
 
@@ -21,7 +19,7 @@ using namespace customio;
 std::string trim(const std::string& s);
 
 // ========== 随机字符串生成 ==========
-static std::string random_string(int min_len, int max_len) {
+std::string random_string(int min_len, int max_len) {
     static const std::string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     static std::mt19937& rng = get_random_engine();
     std::uniform_int_distribution<int> len_dist(min_len, max_len);
@@ -72,6 +70,10 @@ double get_fast_score(const std::string& char_name) {
     // 假设最高分 400，映射到 100
     double score = std::min(100.0, raw / 4.0);
     return score;
+}
+double get_fast_score(const character& c) {
+    int raw = calc_static_score(const_cast<character&>(c)); // calc_static_score 接受非const引用，但实际只读，可以安全 const_cast
+    return std::min(100.0, raw / 4.0);
 }
 
 // ========== 通用 1vN 战斗（N个标准敌人） ==========
@@ -138,7 +140,7 @@ struct BenchmarkReport {
     }
 };
 
-BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int battles_per_test = 30) {
+BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int battles_per_test) {
     BenchmarkReport report = { char_name, 0,0,0,0,"",0 };
 
     int wins = 0;
@@ -178,9 +180,147 @@ BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int b
 }
 
 // ========== 评分函数 ==========
-std::pair<double, std::string> evaluate_score(const std::string& char_name, int battles_per_test = 30) {
+std::pair<double, std::string> evaluate_score(const std::string& char_name, int battles_per_test) {
     BenchmarkReport report = evaluate_character_benchmark(char_name, battles_per_test);
     return { report.final_score, report.grade };
+}
+
+
+// 对现有角色进行模拟战斗评分
+#include <iostream>   // 确保已包含
+#include <sstream>
+
+std::pair<double, std::string> evaluate_real_character(character& c, int battles_per_test) {
+    int old_hp   = c.get_attribute("HP");
+    int old_mp   = c.get_attribute("MP");
+    int old_cap  = c.get_attribute("C_AP");
+    auto old_buffs = c.get_buffs();
+    c.SetRule(BATTLE_WITHOUT_OUTPUT, true);
+
+    int wins1 = 0, wins2 = 0, wins3 = 0;
+
+    // ================= 1v1 =================
+    for (int i = 0; i < battles_per_test; ++i) {
+        auto mon = std::make_unique<character>("标准敌人");
+        mon->setattribute("HP", 150); mon->setattribute("MAX_HP", 150);
+        mon->setattribute("MP", 0);   mon->setattribute("ATK", 40);
+        mon->setattribute("MATK", 30); mon->setattribute("DEF", 20);
+        mon->setattribute("SPD", 30);  mon->setattribute("CRIT", 10);
+        mon->setattribute("CRIT_D", 150); mon->setattribute("C_AP", 30);
+        mon->init_default_actions();
+        mon->SetRule(BATTLE_WITHOUT_OUTPUT, true);
+
+        Team heroTeam("Hero");
+        Team monsterTeam("Monster");
+        heroTeam.add_character(c);
+        monsterTeam.add_character(*mon);
+
+        FightComponent fight;
+        fight.add_team(heroTeam);
+        fight.add_team(monsterTeam);
+        fight.start();
+
+        if (c.is_alive()) wins1++;
+
+        // 恢复状态
+        c.setattribute("HP", old_hp);
+        c.setattribute("MP", old_mp);
+        c.setattribute("C_AP", old_cap);
+        c.set_buffs(old_buffs);
+    }
+
+    // ================= 1v2 =================
+    for (int i = 0; i < battles_per_test; ++i) {
+        Team heroTeam("Hero");
+        Team monsterTeam("Monsters");
+        std::vector<std::unique_ptr<character>> mobs;
+
+        heroTeam.add_character(c);
+        for (int j = 0; j < 2; ++j) {
+            auto mon = std::make_unique<character>("标准敌人");
+            mon->setattribute("HP", 150); mon->setattribute("MAX_HP", 150);
+            mon->setattribute("MP", 0);   mon->setattribute("ATK", 40);
+            mon->setattribute("MATK", 30); mon->setattribute("DEF", 20);
+            mon->setattribute("SPD", 30);  mon->setattribute("CRIT", 10);
+            mon->setattribute("CRIT_D", 150); mon->setattribute("C_AP", 30);
+            mon->init_default_actions();
+            mon->SetRule(BATTLE_WITHOUT_OUTPUT, true);
+            monsterTeam.add_character(*mon);
+            mobs.push_back(std::move(mon));
+        }
+
+        FightComponent fight;
+        fight.add_team(heroTeam);
+        fight.add_team(monsterTeam);
+        fight.start();
+
+        if (c.is_alive()) wins2++;
+
+        c.setattribute("HP", old_hp);
+        c.setattribute("MP", old_mp);
+        c.setattribute("C_AP", old_cap);
+        c.set_buffs(old_buffs);
+    }
+
+    // ================= 1v3 =================
+    for (int i = 0; i < battles_per_test; ++i) {
+        Team heroTeam("Hero");
+        Team monsterTeam("Monsters");
+        std::vector<std::unique_ptr<character>> mobs;
+
+        heroTeam.add_character(c);
+        for (int j = 0; j < 3; ++j) {
+            auto mon = std::make_unique<character>("标准敌人");
+            mon->setattribute("HP", 150); mon->setattribute("MAX_HP", 150);
+            mon->setattribute("MP", 0);   mon->setattribute("ATK", 40);
+            mon->setattribute("MATK", 30); mon->setattribute("DEF", 20);
+            mon->setattribute("SPD", 30);  mon->setattribute("CRIT", 10);
+            mon->setattribute("CRIT_D", 150); mon->setattribute("C_AP", 30);
+            mon->init_default_actions();
+            mon->SetRule(BATTLE_WITHOUT_OUTPUT, true);
+            monsterTeam.add_character(*mon);
+            mobs.push_back(std::move(mon));
+        }
+
+        FightComponent fight;
+        fight.add_team(heroTeam);
+        fight.add_team(monsterTeam);
+        fight.start();
+
+        if (c.is_alive()) wins3++;
+
+        c.setattribute("HP", old_hp);
+        c.setattribute("MP", old_mp);
+        c.setattribute("C_AP", old_cap);
+        c.set_buffs(old_buffs);
+    }
+
+    // 恢复可视设置
+    c.SetRule(BATTLE_WITHOUT_OUTPUT, false);
+    c.setattribute("HP", old_hp);
+    c.setattribute("MP", old_mp);
+
+    double win_rate_1v1 = (double)wins1 / battles_per_test * 100.0;
+    double win_rate_1v2 = (double)wins2 / battles_per_test * 100.0;
+    double win_rate_1v3 = (double)wins3 / battles_per_test * 100.0;
+    double final_score = win_rate_1v1 * 0.5 + win_rate_1v2 * 0.3 + win_rate_1v3 * 0.2;
+
+    std::string grade;
+    if (final_score >= 85) grade = "S";
+    else if (final_score >= 70) grade = "A";
+    else if (final_score >= 55) grade = "B";
+    else if (final_score >= 40) grade = "C";
+    else grade = "D";
+
+    return { final_score, grade };
+}
+// 缓存战斗评分：仅在未计算时运行
+void ensure_benchmark_cached(character& c) {
+    if (!c.is_benchmark_cached()) {   // 原先为 c.get_benchmark_score() < 0.0
+        auto [score, grade] = evaluate_real_character(c, 10);
+        c.set_benchmark_score(score);
+        c.set_benchmark_grade(grade);
+    }
 }
 
 // ========== 批量模拟战斗 ==========
@@ -276,7 +416,7 @@ void output_help() {
 }
 // ========== Debug Console ==========
 void debug_console() {
-    set_theme_by_name("light"); // 默认使用 light 主题
+    set_theme_by_name("default"); // 默认使用 default 主题
 
     const auto& theme = customio::get_console_theme();
     std::cout << customio::background(theme.background)
@@ -458,7 +598,7 @@ void debug_console() {
                     name = trim(name);
                     if (name == "/end") break;
                     if (name.empty()) continue;
-                    std::pair<double, std::string>report = evaluate_score(name);
+                    std::pair<double, std::string>report = evaluate_score(name, 30);
                     std::cout << name << " : " << std::fixed << std::setprecision(1) << report.first << " Grade:" << report.second << std::endl;
                 }
             }

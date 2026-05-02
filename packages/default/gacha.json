@@ -1,0 +1,29 @@
+{
+  "single_cost": 300,
+  "ten_cost": 2800,
+  "pools": {
+    "SSR": {
+      "rate": 0.04,
+      "items": [
+        { "type": "weapon", "weapon_id": "void_blade" },
+        { "type": "weapon", "weapon_id": "celestial_staff" },
+        { "type": "weapon", "weapon_id": "dragon_claw" }
+      ]
+    },
+    "SR": {
+      "rate": 0.18,
+      "items": [
+        { "type": "weapon", "weapon_id": "steel_axe" },
+        { "type": "weapon", "weapon_id": "mystic_wand" },
+        { "type": "weapon", "weapon_id": "shadow_dagger" }
+      ]
+    },
+    "R": {
+      "rate": 0.78,
+      "items": [
+        { "type": "weapon", "weapon_id": "iron_sword" },
+        { "type": "weapon", "weapon_id": "wooden_staff" }
+      ]
+    }
+  }
+}

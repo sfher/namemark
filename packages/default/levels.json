@@ -1,0 +1,199 @@
+﻿{
+  "levels": [
+    {
+      "id": "forest_1",
+      "name": "初出茅庐",
+      "description": "两个果冻般的史莱姆挡住了去路，它们看起来不太聪明，正好拿来练手。",
+      "max_allies": 2,
+      "enemies": [
+        {
+          "preset_id": "slime"
+        },
+        {
+          "preset_id": "slime"
+        }
+      ],
+      "reward_gold": 100
+    },
+    {
+      "id": "forest_2",
+      "name": "哥布林巡逻队",
+      "description": "哥布林巡逻队发现了你！为首的战士正在用木棒敲打自己的脑袋——要么在示威，要么纯粹是痒。",
+      "max_allies": 3,
+      "enemies": [
+        {
+          "preset_id": "goblin"
+        },
+        {
+          "preset_id": "goblin"
+        },
+        {
+          "preset_id": "goblin_warrior"
+        }
+      ],
+      "reward_gold": 150
+    },
+    {
+      "id": "cave_1",
+      "name": "兽人营地",
+      "description": "兽人战士正在烤肉，萨满在一旁念念有词。你闻到了烤肉香——以及危险的气息。",
+      "max_allies": 3,
+      "enemies": [
+        {
+          "preset_id": "orc_warrior"
+        },
+        {
+          "preset_id": "orc_shaman"
+        }
+      ],
+      "reward_gold": 200
+    },
+    {
+      "id": "graveyard_1",
+      "name": "墓地之夜",
+      "description": "月光惨白，墓碑间传来骨骼碰撞的咔嗒声。死者苏生，只为了再死一次。",
+      "max_allies": 3,
+      "enemies": [
+        {
+          "preset_id": "skeleton_warrior"
+        },
+        {
+          "preset_id": "zombie"
+        },
+        {
+          "preset_id": "skeleton_warrior"
+        }
+      ],
+      "reward_gold": 200
+    },
+    {
+      "id": "volcano_1",
+      "name": "火焰洞穴",
+      "description": "热浪扑面而来，火焰精灵在岩浆中嬉戏。它们看起来玩得很开心——直到它们发现了你。",
+      "max_allies": 3,
+      "enemies": [
+        {
+          "preset_id": "flame_spirit"
+        },
+        {
+          "preset_id": "flame_spirit"
+        }
+      ],
+      "reward_gold": 250
+    },
+    {
+      "id": "shadow_temple_1",
+      "name": "暗影殿堂",
+      "description": "殿堂深处，暗影法师正用亡灵打牌。看到你后，他决定加注——押上你的命。",
+      "max_allies": 4,
+      "enemies": [
+        {
+          "preset_id": "shadow_mage"
+        },
+        {
+          "preset_id": "skeleton_warrior"
+        },
+        {
+          "preset_id": "zombie"
+        },
+        {
+          "preset_id": "skeleton_warrior"
+        }
+      ],
+      "reward_gold": 300
+    },
+    {
+      "id": "orc_fortress_1",
+      "name": "兽人堡垒",
+      "description": "兽人督军拍着王座大笑：'又来了一群找死的！'他的战士和萨满已经摆好了阵型。",
+      "max_allies": 4,
+      "enemies": [
+        {
+          "preset_id": "orc_warlord"
+        },
+        {
+          "preset_id": "orc_warrior"
+        },
+        {
+          "preset_id": "orc_shaman"
+        }
+      ],
+      "reward_gold": 350
+    },
+    {
+      "id": "elemental_grounds",
+      "name": "元素之地",
+      "description": "土元素和风暴元素正在吵架——一个说大地最稳，一个说雷电最快。它们决定拿你当裁判。",
+      "max_allies": 4,
+      "enemies": [
+        {
+          "preset_id": "earth_elemental"
+        },
+        {
+          "preset_id": "storm_elemental"
+        }
+      ],
+      "reward_gold": 350
+    },
+    {
+      "id": "void_rift",
+      "name": "虚空裂隙",
+      "description": "空间突然撕裂，虚空幻影从裂隙中飘出。它的笑声在你脑海中回荡。",
+      "max_allies": 4,
+      "enemies": [
+        {
+          "preset_id": "void_phantom"
+        },
+        {
+          "preset_id": "shadow_mage"
+        },
+        {
+          "preset_id": "void_phantom"
+        }
+      ],
+      "reward_gold": 400
+    },
+    {
+      "id": "dragon_peak",
+      "name": "龙之峰",
+      "description": "幼龙刚学会喷火，正在兴头上。两只火焰精灵在一旁看热闹，还给幼龙加油打气。",
+      "max_allies": 4,
+      "enemies": [
+        {
+          "preset_id": "dragon_whelp"
+        },
+        {
+          "preset_id": "flame_spirit"
+        },
+        {
+          "preset_id": "flame_spirit"
+        }
+      ],
+      "reward_gold": 450
+    },
+    {
+      "id": "lich_tomb",
+      "name": "巫妖之墓",
+      "description": "巫妖推开了棺材板：'谁在我的坟头蹦迪？'亡灵大军闻声而起，准备给闯入者一个'热烈欢迎'。",
+      "max_allies": 5,
+      "enemies": [
+        {
+          "preset_id": "lich"
+        },
+        {
+          "preset_id": "skeleton_warrior"
+        },
+        {
+          "preset_id": "zombie"
+        },
+        {
+          "preset_id": "shadow_mage"
+        },
+        {
+          "preset_id": "skeleton_warrior"
+        }
+      ],
+      "reward_gold": 500
+    }
+  ]
+}

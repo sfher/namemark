@@ -46,6 +46,12 @@ bool MonsterPresetManager::load_from_json(const std::string& filepath) {
     return true;
 }
 
+bool MonsterPresetManager::load_from_package(const std::string& package_path) {
+    presets_.clear();
+    std::string filepath = package_path + "/monsters.json";
+    return load_from_json(filepath);
+}
+
 const MonsterPreset* MonsterPresetManager::get_preset(const std::string& id) const {
     auto it = presets_.find(id);
     return it != presets_.end() ? &it->second : nullptr;

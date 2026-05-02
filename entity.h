@@ -2,7 +2,11 @@
 #ifndef ENTITY_H_
 #define ENTITY_H_
 
+#include "weapon_data.h"
+// 移除 #include "console.h"  ← 关键修改
+#include "act.h"
 #include <string>
+#include <deque>
 #include <unordered_map>
 #include <random>
 #include <vector>
@@ -14,7 +18,7 @@
 class act;
 struct FightContext;
 class Team;
-class character;                // 必须前向声明，stereotype 要用到 character*
+class character;
 
 enum rule {
     SUMMON_BASIC_ATTR = 0x01,
@@ -52,6 +56,8 @@ class character : public stereotype {
 private:
     int calculate_damage(character& target);
     static std::mt19937& get_random_engine();
+    act* weapon_granted_action_ = nullptr;
+    std::unordered_map<std::string, int> weapon_bonus_;
 
     std::string name_ = "character";
     int64_t hashcode = 0;
@@ -60,6 +66,8 @@ private:
     std::vector<std::unique_ptr<act>> actions_;
     std::unordered_map<std::string, std::pair<int, int>> buffs_;
 
+    double benchmark_score_ = -1.0;
+    std::string benchmark_grade_ = "?";
 public:
     character();
     explicit character(std::string name);
@@ -71,8 +79,8 @@ public:
     std::string get_name() const override;
     void set_name(std::string name);
     bool is_alive() const override;
-    void take_damage(int damage) override;                // 基类要求
-    void take_damage(int damage, character* attacker);    // 重载版本，用于统计
+    void take_damage(int damage) override;
+    void take_damage(int damage, character* attacker);
     void attack(entity& target) override;
     void setbasicattr();
     void outputattr();
@@ -87,16 +95,32 @@ public:
     std::vector<std::unique_ptr<act>>& get_actions() { return actions_; }
     bool has_aegis() const { return !aegis.empty(); }
     std::vector<std::string> get_aegis() const { return aegis; }
+    std::unordered_map<std::string, std::pair<int, int>> get_buffs() const { return buffs_; }
+    void set_buffs(const std::unordered_map<std::string, std::pair<int, int>>& new_buffs) { buffs_ = new_buffs; }
+    std::unique_ptr<character> clone_for_battle() const;
 
     // ---------- 战斗统计 ----------
     int damage_dealt = 0;
     int damage_taken = 0;
     int kills = 0;
     int healing_done = 0;
+    void reset_stats() { damage_dealt = damage_taken = kills = healing_done = 0;}
 
-    void reset_stats() {
-        damage_dealt = damage_taken = kills = healing_done = 0;
-    }
+    bool is_benchmark_cached() const { return benchmark_score_ >= 0.0; }
+
+    // 声明，实现在 entity.cpp
+    double get_benchmark_score() const;
+    std::string get_benchmark_grade() const;
+
+    void set_benchmark_score(double s) { benchmark_score_ = s; }
+    void set_benchmark_grade(const std::string& g) { benchmark_grade_ = g; }
+
+    // ---------- 武器系统 ----------
+    std::string equipped_weapon_id_;
+    bool equip_weapon(WeaponData& weapon);
+    std::string unequip_weapon();
+    const WeaponData* get_equipped_weapon(const std::vector<WeaponData>& weapon_library) const;
+    bool has_weapon() const { return !equipped_weapon_id_.empty(); }
 };
 
 class Team {
@@ -123,7 +147,7 @@ struct FightContext {
     std::vector<character*> enemies;
     std::vector<character*> allies;
     std::unordered_map<character*, const Team*> char_team;
-    std::vector<std::unique_ptr<character>>* summoned = nullptr;
+    std::deque<std::unique_ptr<character>>* summoned = nullptr;
 };
 
 class FightComponent {
@@ -142,7 +166,7 @@ private:
 
     std::vector<std::reference_wrapper<Team>> teams_;
     std::priority_queue<ActionNode> queue_;
-    std::vector<std::unique_ptr<character>> summoned_characters_;
+    std::deque<std::unique_ptr<character>> summoned_characters_;   // 原为 std::vector
     bool finished_ = false;
     const Team* winner_ = nullptr;
 

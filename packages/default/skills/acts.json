@@ -1,0 +1,457 @@
+﻿{
+  "skills": [
+    {
+      "id": "reckless_charge",
+      "display_name": "蛮牛冲锋",
+      "acquire_chance": 12,
+      "weight": 7,
+      "base_probability": 70,
+      "consume": {
+        "C_AP": 28
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 90,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 2.2,
+      "use_def": true,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "不顾一切冲向敌人，造成高额物理伤害。"
+    },
+    {
+      "id": "backstab",
+      "display_name": "背刺",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 75,
+      "consume": {
+        "C_AP": 22
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 80,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 1.9,
+      "use_def": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "绕到敌人身后发动突袭，无视敌人防御。"
+    },
+    {
+      "id": "whirlwind",
+      "display_name": "旋风斩",
+      "acquire_chance": 12,
+      "weight": 7,
+      "base_probability": 70,
+      "consume": {
+        "C_AP": 30
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 1.2,
+      "use_def": true,
+      "split_damage": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "挥舞武器旋转，对所有敌人造成伤害。"
+    },
+    {
+      "id": "headbutt",
+      "display_name": "头槌",
+      "acquire_chance": 12,
+      "weight": 5,
+      "base_probability": 85,
+      "consume": {
+        "C_AP": 15
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 95,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 1.3,
+      "use_def": true,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "用头部撞击敌人，造成稳定的物理伤害。"
+    },
+    {
+      "id": "throw_sand",
+      "display_name": "扬沙",
+      "acquire_chance": 12,
+      "weight": 4,
+      "base_probability": 90,
+      "consume": {
+        "C_AP": 12
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 1.0,
+      "use_def": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "向敌人扬起沙土，造成轻微伤害且无视防御。"
+    },
+    {
+      "id": "frost_bolt",
+      "display_name": "冰霜箭",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 75,
+      "consume": {
+        "MP": 18,
+        "C_AP": 12
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 90,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 1.8,
+      "use_def": true,
+      "on_hit_buffs": [
+        {
+          "buff_name": "SLOW",
+          "effect": 20,
+          "duration": 2
+        }
+      ],
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "发射冰霜箭矢，造成魔法伤害并减速敌人。"
+    },
+    {
+      "id": "chain_lightning",
+      "display_name": "连锁闪电",
+      "acquire_chance": 12,
+      "weight": 8,
+      "base_probability": 65,
+      "consume": {
+        "MP": 35,
+        "C_AP": 18
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 80,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 1.5,
+      "use_def": true,
+      "split_damage": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "释放连锁闪电，打击所有敌人。"
+    },
+    {
+      "id": "mind_blast",
+      "display_name": "心灵震爆",
+      "acquire_chance": 12,
+      "weight": 7,
+      "base_probability": 70,
+      "consume": {
+        "MP": 25,
+        "C_AP": 15
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 90,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 2.0,
+      "use_def": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "冲击敌人的精神，造成高额魔法伤害，无视防御。"
+    },
+    {
+      "id": "arcane_explosion",
+      "display_name": "奥术爆炸",
+      "acquire_chance": 12,
+      "weight": 9,
+      "base_probability": 55,
+      "consume": {
+        "MP": 45,
+        "C_AP": 25
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 75,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 2.2,
+      "use_def": true,
+      "split_damage": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "引发奥术能量爆炸，对全体敌人造成巨额魔法伤害。"
+    },
+    {
+      "id": "drain_touch",
+      "display_name": "吸取之触",
+      "acquire_chance": 12,
+      "weight": 5,
+      "base_probability": 75,
+      "consume": {
+        "MP": 20,
+        "C_AP": 12
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 2.0,
+      "use_def": true,
+      "on_hit_buffs": [
+        {
+          "buff_name": "DRAIN",
+          "effect": 30,
+          "duration": 1
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 5
+      },
+      "random_available": false,
+      "description": "触碰敌人，吸取其生命与能量，恢复自身。"
+    },
+    {
+      "id": "smoke_bomb",
+      "display_name": "烟雾弹",
+      "acquire_chance": 12,
+      "weight": 4,
+      "base_probability": 85,
+      "consume": {
+        "C_AP": 15
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "self_buffs": [
+        {
+          "buff_name": "DEFENSE_BUFF",
+          "effect": 50,
+          "duration": 2
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 5
+      },
+      "random_available": false,
+      "description": "投掷烟雾弹，提升自身防御，躲避敌人攻击。"
+    },
+    {
+      "id": "adrenaline",
+      "display_name": "肾上腺素",
+      "acquire_chance": 12,
+      "weight": 5,
+      "base_probability": 90,
+      "consume": {
+        "C_AP": 15
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "self_buffs": [
+        {
+          "buff_name": "SPD_BUFF",
+          "effect": 20,
+          "duration": 3
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 10
+      },
+      "random_available": false,
+      "description": "激发肾上腺素，提升自身速度，获得额外行动点。"
+    },
+    {
+      "id": "iron_wall",
+      "display_name": "铁壁",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 95,
+      "consume": {
+        "C_AP": 18
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "self_buffs": [
+        {
+          "buff_name": "DEFENSE_BUFF",
+          "effect": 85,
+          "duration": 2
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 5
+      },
+      "random_available": false,
+      "description": "凝聚防御，大幅提升自身减伤效果。"
+    },
+    {
+      "id": "second_wind",
+      "display_name": "再起",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 80,
+      "consume": {
+        "MP": 15,
+        "C_AP": 15
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "self_buffs": [
+        {
+          "buff_name": "SELF_HEAL",
+          "effect": 20,
+          "duration": 3
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 10
+      },
+      "random_available": false,
+      "description": "调整呼吸，持续恢复自身生命值。"
+    },
+    {
+      "id": "war_dance",
+      "display_name": "战舞",
+      "acquire_chance": 12,
+      "weight": 5,
+      "base_probability": 85,
+      "consume": {
+        "MP": 12,
+        "C_AP": 15
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "self_buffs": [
+        {
+          "buff_name": "SPD_BUFF",
+          "effect": 35,
+          "duration": 2
+        }
+      ],
+      "attr_modifiers": {
+        "C_AP": 22
+      },
+      "random_available": false,
+      "description": "跳起战舞，大幅提升自身速度与行动点。"
+    },
+    {
+      "id": "gamble_punch",
+      "display_name": "赌博重拳",
+      "acquire_chance": 12,
+      "weight": 8,
+      "base_probability": 60,
+      "consume": {
+        "C_AP": 30
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 65,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 4.5,
+      "use_def": true,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "赌上一切的重拳，要么命中造成巨量伤害，要么落空。"
+    },
+    {
+      "id": "borrow_power",
+      "display_name": "借力打力",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 75,
+      "consume": {
+        "C_AP": 25
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "ATK_MATK_SUM",
+      "dmg_coeff": 1.8,
+      "use_def": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "借用敌人的力量反击，结合自身物攻与魔攻造成伤害。"
+    },
+    {
+      "id": "echo_strike",
+      "display_name": "回音击",
+      "acquire_chance": 12,
+      "weight": 6,
+      "base_probability": 70,
+      "consume": {
+        "C_AP": 25,
+        "MP": 15
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 80,
+      "dmg_formula": "ATK_MATK_COMBINED",
+      "dmg_coeff": 1.5,
+      "use_def": true,
+      "split_damage": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "释放回音冲击，对所有敌人造成混合伤害。"
+    },
+    {
+      "id": "last_stand",
+      "display_name": "背水一战",
+      "acquire_chance": 12,
+      "weight": 9,
+      "base_probability": 65,
+      "consume": {
+        "C_AP": 35
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 75,
+      "dmg_formula": "ATK_MATK_COMBINED",
+      "dmg_coeff": 3.0,
+      "use_def": true,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "置之死地而后生，对敌人造成毁灭性的混合伤害。"
+    },
+    {
+      "id": "berserk",
+      "display_name": "狂战士之怒",
+      "acquire_chance": 12,
+      "weight": 8,
+      "base_probability": 60,
+      "consume": {
+        "C_AP": 35
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 70,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 3.0,
+      "use_def": false,
+      "attr_modifiers": {},
+      "random_available": false,
+      "description": "进入狂暴状态，对敌人造成巨额物理伤害，无视防御。"
+    }
+  ]
+}

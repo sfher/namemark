@@ -1,0 +1,84 @@
+﻿{
+  "monsters": [
+    {
+      "id": "flyhead",
+      "name": "蝇头",
+      "attributes": { "HP": 90, "MAX_HP": 90, "MP": 10, "ATK": 28, "DEF": 12, "MATK": 18, "SPD": 25, "CRIT": 5, "CRIT_D": 150, "C_AP": 22 },
+      "actions": ["attack"]
+    },
+    {
+      "id": "flyhead_swarm",
+      "name": "蝇头群",
+      "description": "一大群蝇头聚在一起，总比单个要难缠一些。",
+      "attributes": { "HP": 150, "MAX_HP": 150, "MP": 15, "ATK": 32, "DEF": 14, "MATK": 20, "SPD": 30, "CRIT": 7, "CRIT_D": 150, "C_AP": 24 },
+      "actions": ["attack", "swarm_bite"]
+    },
+    {
+      "id": "transfigured_human",
+      "name": "改造人",
+      "description": "被真人改造过的人类，模样恐怖但实力不强。",
+      "attributes": { "HP": 120, "MAX_HP": 120, "MP": 20, "ATK": 35, "DEF": 18, "MATK": 15, "SPD": 22, "CRIT": 10, "CRIT_D": 150, "C_AP": 26 },
+      "actions": ["attack", "soul_scream"]
+    },
+    {
+      "id": "rainbow_dragon",
+      "name": "虹龙",
+      "attributes": { "HP": 200, "MAX_HP": 200, "MP": 30, "ATK": 45, "DEF": 20, "MATK": 25, "SPD": 30, "CRIT": 10, "CRIT_D": 150, "C_AP": 28 },
+      "actions": ["attack", "smash", "dragon_breath", "dragon_scale"]
+    },
+    {
+      "id": "jogo",
+      "name": "漏瑚",
+      "attributes": { "HP": 320, "MAX_HP": 320, "MP": 60, "MAX_MP": 60, "ATK": 45, "DEF": 30, "MATK": 45, "SPD": 35, "CRIT": 20, "CRIT_D": 150, "C_AP": 40 },
+      "actions": ["volcano_blast", "meteor_strike", "fiery_embrace", "meditate"]
+    },
+    {
+      "id": "hanami",
+      "name": "花御",
+      "attributes": { "HP": 350, "MAX_HP": 350, "MP": 60, "MAX_MP": 60, "ATK": 50, "DEF": 45, "MATK": 40, "SPD": 28, "CRIT": 15, "CRIT_D": 150, "C_AP": 38 },
+      "actions": ["flower_poison", "root_siphon", "ground_fissure", "meditate"]
+    },
+    {
+      "id": "mahito",
+      "name": "真人",
+      "attributes": { "HP": 300, "MAX_HP": 300, "MP": 70, "MAX_MP": 70, "ATK": 60, "DEF": 35, "MATK": 45, "SPD": 42, "CRIT": 25, "CRIT_D": 160, "C_AP": 45 },
+      "actions": ["soul_multiplicity", "body_alter", "meditate", "black_flash"]
+    },
+    {
+      "id": "naoya_zenin",
+      "name": "禅院直哉",
+      "attributes": { "HP": 280, "MAX_HP": 280, "MP": 100, "MAX_MP": 100, "ATK": 40, "DEF": 30, "MATK": 40, "SPD": 70, "CRIT": 25, "CRIT_D": 170, "C_AP": 45 },
+      "actions": ["speedup", "black_flash", "meditate", "attack", "combo"]
+    },
+    {
+      "id": "fushiguro",
+      "name": "伏黑惠",
+      "attributes": { "HP": 260, "MAX_HP": 260, "MP": 80, "MAX_MP": 80, "ATK": 45, "DEF": 25, "MATK": 55, "SPD": 38, "CRIT": 18, "CRIT_D": 170, "C_AP": 38 },
+      "actions": ["ten_shadows", "black_flash", "cursed_energy_reinforcement", "meditate", "heal_magic"]
+    },
+    {
+      "id": "nanami",
+      "name": "七海建人",
+      "attributes": { "HP": 240, "MAX_HP": 240, "MP": 50, "MAX_MP": 50, "ATK": 65, "DEF": 30, "MATK": 20, "SPD": 32, "CRIT": 25, "CRIT_D": 180, "C_AP": 35 },
+      "actions": ["ratio_technique", "black_flash", "cursed_energy_reinforcement", "meditate", "heal_magic"]
+    },
+    {
+      "id": "toji_fushiguro",
+      "name": "伏黑甚尔",
+      "attributes": { "HP": 450, "MAX_HP": 450, "MP": 0, "MAX_MP": 0, "ATK": 90, "DEF": 50, "MATK": 0, "SPD": 80, "CRIT": 60, "CRIT_D": 180, "C_AP": 80 },
+      "actions": ["attack", "smash"]
+    },
+    {
+      "id": "gojo",
+      "name": "五条悟",
+      "attributes": { "HP": 500, "MAX_HP": 500, "MP": 999, "MAX_MP": 999, "ATK": 60, "DEF": 45, "MATK": 75, "SPD": 65, "CRIT": 15, "CRIT_D": 200, "C_AP": 65 },
+      "actions": ["blue", "red", "hollow_purple", "domain_expansion", "black_flash", "cursed_energy_reinforcement", "reverse_cursed_technique"]
+    },
+    {
+      "id": "ryomen_sukuna",
+      "name": "两面宿傩",
+      "attributes": { "HP": 1000, "MAX_HP": 1000, "MP": 300, "MAX_MP": 300, "ATK": 60, "DEF": 60, "MATK": 80, "SPD": 50, "CRIT": 30, "CRIT_D": 200, "C_AP": 60 },
+      "actions": ["dismantle", "cleave", "furnace", "malevolent_shrine", "reverse_cursed_technique", "black_flash", "cursed_energy_reinforcement"]
+    }
+  ]
+}

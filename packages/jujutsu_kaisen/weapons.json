@@ -1,0 +1,72 @@
+﻿{
+  "weapons": [
+    {
+      "id": "cursed_katana",
+      "name": "咒力太刀",
+      "description": "注入咒力的武士刀，对咒灵有奇效。",
+      "rarity": "SR",
+      "price": 1500,
+      "attributes": { "ATK": 20, "CRIT": 5, "SPD": 5 },
+      "skill_grant": "black_flash"
+    },
+    {
+      "id": "inverted_spear",
+      "name": "天逆鉾",
+      "description": "能强制解除一切术式的咒具。",
+      "rarity": "SSR",
+      "price": 8000,
+      "attributes": { "ATK": 40, "MATK": 25, "DEF": 15 },
+      "skill_grant": "ratio_technique"
+    },
+    {
+      "id": "slaughter_demon",
+      "name": "屠坐魔",
+      "description": "禅院真希曾使用的短刀，轻便好用。",
+      "rarity": "R",
+      "price": 800,
+      "attributes": { "ATK": 12, "SPD": 8 }
+    },
+    {
+      "id": "black_rope",
+      "name": "黑绳",
+      "description": "米格尔的特级咒具，能干扰对手的术式。",
+      "rarity": "SR",
+      "price": 6000,
+      "attributes": { "ATK": 30, "DEF": 10, "SPD": 15 },
+      "skill_grant": "cursed_energy_reinforcement"
+    },
+    {
+      "id": "playful_cloud",
+      "name": "游云",
+      "description": "禅院真希爱用的特级咒具，纯粹的力量增幅。",
+      "rarity": "SR",
+      "price": 7000,
+      "attributes": { "ATK": 45, "SPD": 10, "CRIT": 5 }
+    },
+    {
+      "id": "vajra",
+      "name": "金刚杵",
+      "description": "一个小型咒具，能增幅使用者的咒力输出。",
+      "rarity": "R",
+      "price": 1200,
+      "attributes": { "MATK": 18, "MP": 10 }
+    },
+    {
+      "id": "katana_of_man",
+      "name": "武士刀",
+      "description": "一把普通的武士刀，在天与咒缚者手中却能斩杀咒灵。",
+      "rarity": "R",
+      "price": 2000,
+      "attributes": { "ATK": 25, "CRIT": 10, "CRIT_D": 20 }
+    },
+    {
+      "id": "sukuna_finger",
+      "name": "宿傩的手指",
+      "description": "两面宿傩的手指，蕴含着强大的诅咒力量。",
+      "rarity": "SR",
+      "price": 3000,
+      "attributes": { "ATK": 10, "MATK": 10, "MP": 10 },
+      "skill_grant": "dismantle"
+    }
+  ]
+}

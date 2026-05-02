@@ -1,0 +1,76 @@
+{
+  "weapons": [
+    {
+      "id": "iron_sword",
+      "name": "Iron Sword",
+      "description": "A basic sharp sword. Reliable for beginners.",
+      "rarity": "R",
+      "price": 800,
+      "attributes": { "ATK": 18, "CRIT": 5 },
+      "skill_grant": "smash"
+    },
+    {
+      "id": "wooden_staff",
+      "name": "Wooden Staff",
+      "description": "Simple magic focus. Boosts minor spell power.",
+      "rarity": "R",
+      "price": 800,
+      "attributes": { "MATK": 18, "SPD": 5 },
+      "skill_grant": "magic_missile"
+    },
+    {
+      "id": "steel_axe",
+      "name": "Steel Axe",
+      "description": "Heavy axe with high critical damage potential.",
+      "rarity": "SR",
+      "price": 2200,
+      "attributes": { "ATK": 35, "CRIT_D": 30 },
+      "skill_grant": "combo"
+    },
+    {
+      "id": "mystic_wand",
+      "name": "Mystic Wand",
+      "description": "Wand infused with fire magic. Increases spell damage.",
+      "rarity": "SR",
+      "price": 2200,
+      "attributes": { "MATK": 35, "CRIT": 10 },
+      "skill_grant": "fireball"
+    },
+    {
+      "id": "shadow_dagger",
+      "name": "Shadow Dagger",
+      "description": "Dagger that ignores part of enemy defense.",
+      "rarity": "SR",
+      "price": 2400,
+      "attributes": { "ATK": 30, "SPD": 15, "CRIT": 15 },
+      "skill_grant": "backstab"
+    },
+    {
+      "id": "void_blade",
+      "name": "Void Blade",
+      "description": "Blade forged from void energy. Extremely destructive.",
+      "rarity": "SSR",
+      "price": 6000,
+      "attributes": { "ATK": 60, "CRIT": 25, "CRIT_D": 50 },
+      "skill_grant": "void_explosion"
+    },
+    {
+      "id": "celestial_staff",
+      "name": "Celestial Staff",
+      "description": "Staff blessed by ancient magic. Master of all elements.",
+      "rarity": "SSR",
+      "price": 6000,
+      "attributes": { "MATK": 60, "SPD": 25, "C_AP": 15 },
+      "skill_grant": "meteor_strike"
+    },
+    {
+      "id": "dragon_claw",
+      "name": "Dragon Claw",
+      "description": "Claw from a young dragon. Balanced physical & magic power.",
+      "rarity": "SSR",
+      "price": 6500,
+      "attributes": { "ATK": 40, "MATK": 40, "DEF": 15 },
+      "skill_grant": "heavy_strike"
+    }
+  ]
+}

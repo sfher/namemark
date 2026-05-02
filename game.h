@@ -5,6 +5,8 @@
 #include "entity.h"
 #include "level_data.h"
 #include "monster_preset.h"
+#include "package_manager.h"
+#include "weapon_data.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -15,18 +17,32 @@ enum class GameStateType {
     LOBBY,
     TEAM,
     ADVENTURE,
+    SHOP,
+    GACHA,
     CONSOLE,
     SETTINGS,
+    TEAM_TEST,
     EXIT
 };
 
 // 跨状态共享上下文
 
 struct GameContext {
+    std::vector<WeaponData> weapon_templates;   // 武器模板库（只读，供商店和抽卡引用）
     std::vector<std::unique_ptr<character>> all_characters;
     std::vector<size_t> selected_team;
     LevelManager level_manager;
     MonsterPresetManager preset_manager;
+    PackageManager package_manager;
+
+    int gold = 0;                                    // 全局金币
+    std::vector<WeaponData> weapons;                  // 当前模组的武器库
+
+     // 抽卡
+    int gacha_single_cost = 300;
+    int gacha_ten_cost = 2800;
+    std::unordered_map<std::string, double> gacha_rates;  // SSR -> 0.05 等
+    std::unordered_map<std::string, std::vector<std::pair<std::string, std::string>>> gacha_pools; // 稀有度 -> [(type, id)]
 };
 
 // 状态基类
@@ -53,6 +69,8 @@ public:
 
     Game(const Game&) = delete;
     Game& operator=(const Game&) = delete;
+
+    PackageManager package_manager_;
 
     void run();
     void changeState(GameStateType type);

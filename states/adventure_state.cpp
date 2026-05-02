@@ -29,8 +29,8 @@ void print_fight_report(Team& teamA, Team& teamB) {
 
         for (auto& ref : members) {
             character& ch = ref.get();
-            double score = get_fast_score(ch.get_name());
-            char grade = (score >= 85) ? 'S' : (score >= 70) ? 'A' : (score >= 55) ? 'B' : (score >= 40) ? 'C' : 'D';
+            double score = get_fast_score(ch);
+            std::string grade = (score >= 85) ? "S" : (score >= 70) ? "A" : (score >= 55) ? "B" : (score >= 40) ? "C" : "D";
             std::cout << std::setw(20) << std::left << ch.get_name()
                       << std::setw(8) << ch.damage_dealt
                       << std::setw(8) << ch.damage_taken
@@ -210,6 +210,7 @@ void AdventureState::update() {
     show_level_list_menu();
 }
 
+// adventure_state.cpp
 bool AdventureState::play_level(int level_index) {
     const LevelData* lv = ctx_.level_manager.get_level(level_index);
     if (!lv) return false;
@@ -220,46 +221,40 @@ bool AdventureState::play_level(int level_index) {
               << "===== " << lv->name << " =====" << resetcolor() << std::endl;
     std::cout << lv->description << "\n\n";
 
-    // 构建我方队伍（克隆出战角色）
+    // ---------- 1. 构建我方队伍（直接使用本体） ----------
     Team player_team("冒险者");
-    std::vector<std::unique_ptr<character>> cloned_characters;
+    std::vector<character*> participating_heroes;  // 记录参战的本体指针
+
     for (size_t idx : ctx_.selected_team) {
         if (idx >= ctx_.all_characters.size()) continue;
-        character* original = ctx_.all_characters[idx].get();
-        auto clone = std::make_unique<character>();
-        clone->set_name(original->get_name());
-
-        std::vector<std::string> attrs = {
-            "MAX_HP", "HP", "MAX_MP", "MP", "ATK", "DEF", "MATK", "SPD",
-            "CRIT", "CRIT_D", "C_AP"
-        };
-        for (const auto& attr : attrs) {
-            int val = original->get_attribute(attr);
-            if (attr == "HP") val = original->get_attribute("MAX_HP");
-            if (attr == "MP") val = original->get_attribute("MAX_MP");
-            clone->setattribute(attr, val);
-        }
-        clone->SetRule(BATTLE_WITHOUT_OUTPUT, original->GetRule(BATTLE_WITHOUT_OUTPUT));
-        clone->SetRule(SHOW_ATTRIBUTES, original->GetRule(SHOW_ATTRIBUTES));
-        clone->SetRule(SLOW_BATTLE, original->GetRule(SLOW_BATTLE));
-        // 复制技能
-        clone->get_actions().clear();
-        for (const auto& action : original->get_actions()) {
-            const SkillInfo* info = SkillRegistry::getSkillInfo(action->get_name());
-            if (info) {
-                clone->get_actions().push_back(info->factory());
-            }
-        }
-        if (clone->get_actions().empty()) {
-            clone->get_actions().push_back(std::make_unique<Attack>());
-        }
-        // 重置统计
-        clone->reset_stats();
-        player_team.add_character(*clone);
-        cloned_characters.push_back(std::move(clone));
+        character* hero = ctx_.all_characters[idx].get();
+        hero->SetRule(BATTLE_WITHOUT_OUTPUT, false); // 显示战斗过程
+        player_team.add_character(*hero);
+        participating_heroes.push_back(hero);
     }
 
-    // 构建敌方队伍（使用预设或默认名）
+    // ---------- 2. 保存本体的战斗前状态 ----------
+    struct HeroSnapshot {
+        character* hero;
+        int hp, mp, cap;
+        std::unordered_map<std::string, std::pair<int, int>> buffs;
+    };
+    std::vector<HeroSnapshot> snapshots;
+
+    for (auto hero : participating_heroes) {
+        HeroSnapshot snap;
+        snap.hero = hero;
+        snap.hp = hero->get_attribute("HP");
+        snap.mp = hero->get_attribute("MP");
+        snap.cap = hero->get_attribute("C_AP");
+        // 拷贝buff状态
+        snap.buffs = hero->get_buffs();
+        snapshots.push_back(snap);
+        // 重置统计（让本场战斗开始时的统计干干净净）
+        hero->reset_stats();
+    }
+
+    // ---------- 3. 构建敌方队伍（预设怪物） ----------
     Team enemy_team("敌军");
     std::vector<std::unique_ptr<character>> enemy_chars;
     for (const auto& spawn : lv->enemies) {
@@ -274,28 +269,15 @@ bool AdventureState::play_level(int level_index) {
             enemy->get_actions().clear();
             for (const auto& action_id : preset->actions) {
                 const SkillInfo* info = SkillRegistry::getSkillInfo(action_id);
-                if (info) {
-                    enemy->get_actions().push_back(info->factory());
-                }
+                if (info) enemy->get_actions().push_back(info->factory());
             }
-            if (enemy->get_actions().empty()) {
+            if (enemy->get_actions().empty())
                 enemy->get_actions().push_back(std::make_unique<Attack>());
-            }
-        }
-        else {
-            // 兼容旧格式：名字生成随机属性
+        } else {
             enemy = std::make_unique<character>(spawn.name.empty() ? "未知敌人" : spawn.name);
         }
-        // 覆盖属性（如果关卡中有额外指定）
         for (const auto& attr : spawn.attributes) {
             enemy->setattribute(attr.first, attr.second);
-        }
-        // 确保关键属性存在
-        if (enemy->get_attribute("MAX_HP") == 0) {
-            enemy->setattribute("MAX_HP", enemy->get_attribute("HP"));
-        }
-        if (enemy->get_attribute("MAX_MP") == 0) {
-            enemy->setattribute("MAX_MP", enemy->get_attribute("MP"));
         }
         enemy->SetRule(BATTLE_WITHOUT_OUTPUT, false);
         enemy->reset_stats();
@@ -303,7 +285,7 @@ bool AdventureState::play_level(int level_index) {
         enemy_chars.push_back(std::move(enemy));
     }
 
-    // 战斗
+    // ---------- 4. 执行战斗 ----------
     FightComponent fight;
     fight.add_team(player_team);
     fight.add_team(enemy_team);
@@ -311,8 +293,29 @@ bool AdventureState::play_level(int level_index) {
 
     bool victory = player_team.is_alive() && !enemy_team.is_alive();
 
-    // 输出结算报表
+    // ---------- 5. 输出结算报表 ----------
     print_fight_report(player_team, enemy_team);
+
+    // ---------- 6. 恢复本体状态 ----------
+    for (const auto& snap : snapshots) {
+        character* hero = snap.hero;
+        hero->setattribute("HP", snap.hp);
+        hero->setattribute("MP", snap.mp);
+        hero->setattribute("C_AP", snap.cap);
+        // 恢复buffs
+        hero->set_buffs(snap.buffs);
+        // 清除本场战斗的统计数据
+        hero->reset_stats();
+    }
+
+    // ---------- 7.战斗奖励结算 ----------
+    if (victory) {
+        const LevelData* lv = ctx_.level_manager.get_level(level_index);
+        int reward = lv ? lv->reward_gold : 0;
+        if (reward <= 0) reward = 300;   // 默认保底奖励
+        ctx_.gold += reward;
+        std::cout << "\n获得金币 +" << reward << "！当前金币: " << ctx_.gold << "\n";
+    }
 
     std::cout << "\n按任意键继续...";
     _getch();

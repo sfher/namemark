@@ -1,0 +1,151 @@
+﻿{
+  "levels": [
+    {
+      "id": "shibuya_1",
+      "name": "涉谷站前",
+      "description": "几只蝇头正在地铁口乱窜，五条老师又双叒叕迟到了。",
+      "max_allies": 2,
+      "reward_gold": 150,
+      "enemies": [
+        { "preset_id": "flyhead" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_1_5",
+      "name": "蝇头成灾",
+      "description": "更多的蝇头聚集在一起，形成了一股令人不安的咒力。",
+      "max_allies": 3,
+      "reward_gold": 180,
+      "enemies": [
+        { "preset_id": "flyhead_swarm" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_2",
+      "name": "地下铁遭遇",
+      "description": "虹龙突然出现，看来有人不想让你准时打卡。",
+      "max_allies": 3,
+      "reward_gold": 220,
+      "enemies": [
+        { "preset_id": "rainbow_dragon" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_2_5",
+      "name": "人类的悲鸣",
+      "description": "真人改造的人类从阴暗处涌出，他们的哀嚎令人毛骨悚然。",
+      "max_allies": 3,
+      "reward_gold": 280,
+      "enemies": [
+        { "preset_id": "transfigured_human" },
+        { "preset_id": "transfigured_human" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_3",
+      "name": "火山爆发",
+      "description": "漏瑚头顶冒烟，怒气值肉眼可见。旁边的小咒灵正在给他扇风。",
+      "max_allies": 3,
+      "reward_gold": 320,
+      "enemies": [
+        { "preset_id": "jogo" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_4",
+      "name": "花与蛇",
+      "description": "花御在涉谷种起了花，不过这些花看起来不太友好。",
+      "max_allies": 3,
+      "reward_gold": 360,
+      "enemies": [
+        { "preset_id": "hanami" },
+        { "preset_id": "transfigured_human" }
+      ]
+    },
+    {
+      "id": "shibuya_5",
+      "name": "真人的实验室",
+      "description": "真人正在把路人变成咒灵，看到你后露出了'下一个就是你了'的微笑。",
+      "max_allies": 4,
+      "reward_gold": 450,
+      "enemies": [
+        { "preset_id": "mahito" },
+        { "preset_id": "transfigured_human" },
+        { "preset_id": "transfigured_human" },
+        { "preset_id": "rainbow_dragon" }
+      ]
+    },
+    {
+      "id": "shibuya_5_5",
+      "name": "极之番",
+      "description": "禅院直哉以惊人的速度向你冲来，嘴里还说着'真碍事'。",
+      "max_allies": 4,
+      "reward_gold": 500,
+      "enemies": [
+        { "preset_id": "naoya_zenin" },
+        { "preset_id": "transfigured_human" },
+        { "preset_id": "transfigured_human" }
+      ]
+    },
+    {
+      "id": "shibuya_6",
+      "name": "伏黑的决意",
+      "description": "伏黑惠挡在你面前：'想过去，先打赢我！'（他不是敌人，只是想切磋）",
+      "max_allies": 4,
+      "reward_gold": 520,
+      "enemies": [
+        { "preset_id": "fushiguro" },
+        { "preset_id": "rainbow_dragon" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_7",
+      "name": "咒术高专期末考",
+      "description": "七海建人准时下班前给你出的一道附加题：'打倒我，或者加班到死。'",
+      "max_allies": 4,
+      "reward_gold": 620,
+      "enemies": [
+        { "preset_id": "nanami" },
+        { "preset_id": "rainbow_dragon" },
+        { "preset_id": "flyhead" }
+      ]
+    },
+    {
+      "id": "shibuya_7_5",
+      "name": "天与暴君",
+      "description": "伏黑甚尔面无表情地站在前方，散发着纯粹的压迫感。",
+      "max_allies": 5,
+      "reward_gold": 800,
+      "enemies": [
+        { "preset_id": "toji_fushiguro" },
+        { "preset_id": "flyhead_swarm" }
+      ]
+    },
+    {
+      "id": "shibuya_8",
+      "name": "最强之战",
+      "description": "五条悟摘下眼罩：‘让我看看你们的水平。’",
+      "max_allies": 5,
+      "reward_gold": 1000,
+      "enemies": [
+        { "preset_id": "gojo" }
+      ]
+    },
+    {
+      "id": "shibuya_9",
+      "name": "诅咒之王",
+      "description": "两面宿傩坐在尸骨堆成的王座上，饶有兴致地看着你。",
+      "max_allies": 5,
+      "reward_gold": 1500,
+      "enemies": [
+        { "preset_id": "ryomen_sukuna" }
+      ]
+    }
+  ]
+}

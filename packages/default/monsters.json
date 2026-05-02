@@ -1,0 +1,337 @@
+﻿{
+  "monsters": [
+    {
+      "id": "slime",
+      "name": "史莱姆",
+      "attributes": {
+        "HP": 80,
+        "MAX_HP": 80,
+        "MP": 0,
+        "ATK": 30,
+        "DEF": 10,
+        "MATK": 15,
+        "SPD": 20,
+        "CRIT": 5,
+        "CRIT_D": 150,
+        "C_AP": 20,
+        "MAX_MP": 0
+      },
+      "actions": [
+        "attack",
+        "smash"
+      ]
+    },
+    {
+      "id": "goblin",
+      "name": "哥布林",
+      "attributes": {
+        "HP": 90,
+        "MAX_HP": 90,
+        "MP": 20,
+        "ATK": 35,
+        "DEF": 10,
+        "MATK": 20,
+        "SPD": 25,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 30,
+        "MAX_MP": 20
+      },
+      "actions": [
+        "attack",
+        "magic_missile"
+      ]
+    },
+    {
+      "id": "goblin_warrior",
+      "name": "哥布林战士",
+      "attributes": {
+        "HP": 120,
+        "MAX_HP": 120,
+        "MP": 20,
+        "ATK": 40,
+        "DEF": 15,
+        "MATK": 20,
+        "SPD": 25,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 20,
+        "MAX_MP": 20
+      },
+      "actions": [
+        "attack",
+        "smash",
+        "magic_missile"
+      ]
+    },
+    {
+      "id": "orc_warrior",
+      "name": "兽人战士",
+      "attributes": {
+        "HP": 130,
+        "MAX_HP": 130,
+        "MP": 20,
+        "ATK": 40,
+        "DEF": 20,
+        "MATK": 20,
+        "SPD": 25,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 30,
+        "MAX_MP": 20
+      },
+      "actions": [
+        "attack",
+        "smash",
+        "lifesteal"
+      ]
+    },
+    {
+      "id": "orc_shaman",
+      "name": "兽人萨满",
+      "attributes": {
+        "HP": 130,
+        "MAX_HP": 130,
+        "MP": 70,
+        "ATK": 20,
+        "DEF": 15,
+        "MATK": 55,
+        "SPD": 30,
+        "CRIT": 15,
+        "CRIT_D": 150,
+        "C_AP": 35,
+        "MAX_MP": 70
+      },
+      "actions": [
+        "magic_missile",
+        "heal_magic",
+        "poison_magic"
+      ]
+    },
+    {
+      "id": "zombie",
+      "name": "僵尸",
+      "attributes": {
+        "HP": 200,
+        "MAX_HP": 200,
+        "MP": 0,
+        "ATK": 40,
+        "DEF": 15,
+        "MATK": 10,
+        "SPD": 15,
+        "CRIT": 5,
+        "CRIT_D": 150,
+        "C_AP": 25,
+        "MAX_MP": 0
+      },
+      "actions": [
+        "attack",
+        "lifesteal"
+      ]
+    },
+    {
+      "id": "skeleton_warrior",
+      "name": "骷髅战士",
+      "attributes": {
+        "HP": 160,
+        "MAX_HP": 160,
+        "MP": 60,
+        "ATK": 40,
+        "DEF": 20,
+        "MATK": 30,
+        "SPD": 28,
+        "CRIT": 50,
+        "CRIT_D": 150,
+        "C_AP": 30,
+        "MAX_MP": 60
+      },
+      "actions": [
+        "attack",
+        "smash",
+        "magic_missile"
+      ]
+    },
+    {
+      "id": "void_phantom",
+      "name": "虚空幻影",
+      "attributes": {
+        "HP": 200,
+        "MAX_HP": 200,
+        "MP": 80,
+        "ATK": 30,
+        "DEF": 20,
+        "MATK": 60,
+        "SPD": 40,
+        "CRIT": 20,
+        "CRIT_D": 150,
+        "C_AP": 40,
+        "MAX_MP": 80
+      },
+      "actions": [
+        "magic_missile",
+        "void_explosion",
+        "speedup",
+        "poison_magic"
+      ]
+    },
+    {
+      "id": "shadow_mage",
+      "name": "暗影法师",
+      "attributes": {
+        "HP": 150,
+        "MAX_HP": 150,
+        "MP": 80,
+        "ATK": 20,
+        "DEF": 15,
+        "MATK": 60,
+        "SPD": 30,
+        "CRIT": 25,
+        "CRIT_D": 150,
+        "C_AP": 40,
+        "MAX_MP": 80
+      },
+      "actions": [
+        "magic_missile",
+        "void_explosion",
+        "self_heal",
+        "fireball"
+      ]
+    },
+    {
+      "id": "flame_spirit",
+      "name": "火焰精灵",
+      "attributes": {
+        "HP": 120,
+        "MAX_HP": 120,
+        "MP": 60,
+        "ATK": 20,
+        "DEF": 10,
+        "MATK": 55,
+        "SPD": 40,
+        "CRIT": 20,
+        "CRIT_D": 150,
+        "C_AP": 35,
+        "MAX_MP": 60
+      },
+      "actions": [
+        "magic_missile",
+        "fireball",
+        "speedup"
+      ]
+    },
+    {
+      "id": "orc_warlord",
+      "name": "兽人督军",
+      "attributes": {
+        "HP": 380,
+        "MAX_HP": 380,
+        "MP": 20,
+        "ATK": 80,
+        "DEF": 30,
+        "MATK": 15,
+        "SPD": 25,
+        "CRIT": 25,
+        "CRIT_D": 200,
+        "C_AP": 50,
+        "MAX_MP": 20
+      },
+      "actions": [
+        "smash",
+        "combo",
+        "lifesteal",
+        "magic_punch"
+      ]
+    },
+    {
+      "id": "earth_elemental",
+      "name": "土元素",
+      "attributes": {
+        "HP": 350,
+        "MAX_HP": 350,
+        "MP": 40,
+        "ATK": 40,
+        "DEF": 40,
+        "MATK": 25,
+        "SPD": 10,
+        "CRIT": 5,
+        "CRIT_D": 150,
+        "C_AP": 25,
+        "MAX_MP": 40
+      },
+      "actions": [
+        "attack",
+        "stone_skin",
+        "ground_fissure",
+        "smash"
+      ]
+    },
+    {
+      "id": "storm_elemental",
+      "name": "风暴元素",
+      "attributes": {
+        "HP": 180,
+        "MAX_HP": 180,
+        "MP": 80,
+        "ATK": 30,
+        "DEF": 20,
+        "MATK": 70,
+        "SPD": 50,
+        "CRIT": 20,
+        "CRIT_D": 150,
+        "C_AP": 45,
+        "MAX_MP": 80
+      },
+      "actions": [
+        "magic_missile",
+        "lightning",
+        "speedup",
+        "ground_fissure"
+      ]
+    },
+    {
+      "id": "dragon_whelp",
+      "name": "幼龙",
+      "attributes": {
+        "HP": 280,
+        "MAX_HP": 280,
+        "MP": 50,
+        "ATK": 55,
+        "DEF": 30,
+        "MATK": 55,
+        "SPD": 35,
+        "CRIT": 20,
+        "CRIT_D": 200,
+        "C_AP": 65,
+        "MAX_MP": 50
+      },
+      "actions": [
+        "smash",
+        "fireball",
+        "meteor_strike"
+      ]
+    },
+    {
+      "id": "lich",
+      "name": "巫妖",
+      "attributes": {
+        "HP": 300,
+        "MAX_HP": 300,
+        "MP": 80,
+        "ATK": 20,
+        "DEF": 20,
+        "MATK": 70,
+        "SPD": 30,
+        "CRIT": 25,
+        "CRIT_D": 150,
+        "C_AP": 50,
+        "MAX_MP": 80
+      },
+      "actions": [
+        "magic_missile",
+        "poison_magic",
+        "self_heal",
+        "void_explosion"
+      ]
+    }
+  ]
+}

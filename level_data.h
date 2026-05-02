@@ -19,6 +19,7 @@ struct LevelData {
     std::vector<EnemySpawn> enemies;
     bool unlocked = false;
     bool completed = false;
+    int reward_gold = 300;
 };
 
 class LevelManager {
@@ -32,6 +33,8 @@ public:
 
     bool is_unlocked(int index) const;
     bool is_completed(int index) const;
+
+    bool load_from_package(const std::string& package_path);
 
     void mark_completed(int index);
     void unlock_next(int current_index);

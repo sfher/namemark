@@ -24,6 +24,10 @@ const SkillInfo* SkillRegistry::getSkillInfo(const std::string& id) {
     return it != skills_.end() ? &it->second : nullptr;
 }
 
+void SkillRegistry::clearAll() {
+    skills_.clear();
+}
+
 const std::unordered_map<std::string, SkillInfo>& SkillRegistry::getAllSkills() {
     return skills_;
 }
@@ -52,13 +56,14 @@ void registerAllSkills() {
     SkillRegistry::registerSkill("speedup", SkillInfo("加速术", 35, 6, []() { return std::make_unique<Speedup>(); }));
     SkillRegistry::registerSkill("poison_magic", SkillInfo("毒魔法", 45, 8, []() { return std::make_unique<PoisonMagic>(); }));
     SkillRegistry::registerSkill("fireball", SkillInfo("火球术", 55, 9, []() { return std::make_unique<Fireball>(); }));
+    SkillRegistry::registerSkill("freeze", SkillInfo("冰冻术", 40, 8, []() { return std::make_unique<Freeze>(); }));
     SkillRegistry::registerSkill("heal_magic", SkillInfo("治愈魔法", 50, 9, []() { return std::make_unique<HealMagic>(); }));
     SkillRegistry::registerSkill("summon_phantom", SkillInfo("召唤幻影", 25, 9, []() { return std::make_unique<SummonPhantom>(); }));
     SkillRegistry::registerSkill("lightning", SkillInfo("闪电术", 20, 8, []() { return std::make_unique<LightningChain>(); }));
     SkillRegistry::registerSkill("self_heal", SkillInfo("自愈", 7, 10, []() { return std::make_unique<SelfHeal>(); }));
     SkillRegistry::registerSkill("void_god_summon", SkillInfo("虚神召唤", 10, 10, []() { return std::make_unique<VoidGodSummon>(); }));
     SkillRegistry::registerSkill("lifesteal", SkillInfo("吸血", 20, 8, []() { return std::make_unique<Lifesteal>(); }));
-    SkillRegistry::registerSkill("meditate", SkillInfo("冥想", 30, 5, []() { return std::make_unique<Meditate>(); }));
+    SkillRegistry::registerSkill("meditate", SkillInfo("冥想", 25, 7, []() { return std::make_unique<Meditate>(); }));
     SkillRegistry::registerSkill("magic_punch", SkillInfo("魔法重拳", 60, 10, []() { return std::make_unique<MagicPunch>(); }));
     SkillRegistry::registerSkill("void_explosion", SkillInfo("虚爆", 7, 10, []() { return std::make_unique<VoidExplosion>(); }));
     SkillRegistry::registerSkill("ground_fissure", SkillInfo("裂地术", 30, 7, []() { return std::make_unique<GroundFissure>(); }));
@@ -195,6 +200,16 @@ bool Smash::execute(character* c, FightContext& ctx) {
                   << customio::resetcolor() << std::endl;
         customio::game_sleep(300 * g_battle_speed);
     }
+    //概率击晕
+        if (SkillExecutor::hit_check(c, 85)) {
+            target->add_buff("STUNNED", 1, 1); // 眩晕1回合
+            if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
+                const auto& theme = customio::get_console_theme();
+                std::cout << customio::adaptive_textcolor(theme.special)
+                        << target->get_name() << " 被击晕了！"
+                        << customio::resetcolor() << std::endl;
+            }
+        }
     int raw_atk = DamageCalculator::calculate_raw_attack(c, DamageFormula::ATK_POWER);
     int final_damage = DamageCalculator::calculate_final_damage(c, target, raw_atk, true);
     target->take_damage(final_damage);
@@ -204,7 +219,7 @@ bool Smash::execute(character* c, FightContext& ctx) {
 // 连击
 ComboAttack::ComboAttack() : act(70) {
     name_ = "连击";
-    set_consume("C_AP", 22);
+    set_consume("C_AP", 20);
     set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
     set_description("一秒三刀，刀刀暴击？不存在的，但痛是真的痛。");
 }
@@ -220,10 +235,10 @@ bool ComboAttack::execute(character* c, FightContext& ctx) {
     std::vector<character*> targets = SkillExecutor::get_targets(ctx, c, target_type_);
     if (targets.empty()) return false;
     character* target = targets[0];
-    const int max_hits = 3;
-    const float damage_coeff = 0.8f;
-    const float decay = 0.6f;
-    const int hit_rate = 90;
+    const int max_hits = 5;
+    const float damage_coeff = 0.95f;
+    const float decay = 0.92f;
+    const int hit_rate = 93;
     for (int i = 0; i < max_hits; ++i) {
         if (!c->GetRule(BATTLE_WITHOUT_OUTPUT)) {
             std::cout << customio::textcolor(customio::color::white)
@@ -271,8 +286,8 @@ bool MagicMissile::execute(character* c, FightContext& ctx) {
 // 召唤幻影
 SummonPhantom::SummonPhantom() : act(35) {
     name_ = "召唤幻影";
-    set_consume("MP", 20);
-    set_consume("C_AP", 20);
+    set_consume("MP", 12);
+    set_consume("C_AP", 12);
     set_target_type(TargetType::NONE);
     set_description("分身术！虽然分身有点脆，但人多势众。");
 }
@@ -295,15 +310,15 @@ bool SummonPhantom::execute(character* c, FightContext& ctx) {
     std::string phantom_name = c->get_name() + "的幻影";
     auto phantom = std::make_unique<character>();
     phantom->set_name(phantom_name);
-    int hp = std::max(1, c->get_attribute("HP") * 60 / 100);
-    int mp = std::max(0, c->get_attribute("MP") * 50 / 100);
-    int atk = std::max(1, c->get_attribute("ATK") * 70 / 100);
-    int matk = std::max(1, c->get_attribute("MATK") * 70 / 100);
-    int def = std::max(1, c->get_attribute("DEF") * 60 / 100);
+    int hp = std::max(1, c->get_attribute("HP") * 100 / 100);
+    int mp = std::max(0, c->get_attribute("MP") * 70 / 100);
+    int atk = std::max(1, c->get_attribute("ATK") * 90 / 100);
+    int matk = std::max(1, c->get_attribute("MATK") * 90 / 100);
+    int def = std::max(1, c->get_attribute("DEF") * 80 / 100);
     int spd = std::max(1, c->get_attribute("SPD") * 90 / 100);
     int crit = c->get_attribute("CRIT");
     int crit_d = c->get_attribute("CRIT_D");
-    int cap = std::max(10, c->get_attribute("C_AP") - 5);
+    int cap = std::max(30, c->get_attribute("C_AP"));
     phantom->setattribute("HP", hp);
     phantom->setattribute("MAX_HP", hp);
     phantom->setattribute("MP", mp);
@@ -595,8 +610,9 @@ bool SelfHeal::execute(character* c, FightContext& ctx) {
 
 VoidGodSummon::VoidGodSummon() : act(100) {
     name_ = "虚神召唤";
-    set_consume("MP", 35);
+    set_consume("MP", 50);
     set_consume("C_AP", 35);
+    set_consume("HP", 50);
     set_target_type(TargetType::NONE);
     set_description("我的天哪，魔虚罗大人。");
 }
@@ -619,21 +635,17 @@ bool VoidGodSummon::execute(character* c, FightContext& ctx) {
     std::string phantom_name = "虚神";
     auto phantom = std::make_unique<character>();
     phantom->set_name(phantom_name);
-    int hp = 200, mp = 50, atk = 50, matk = 50, def = 10, spd = 40, crit = 10, crit_d = 300, cap = 50;
+    int hp = 300, mp = 50, atk = 45, matk = 45, def = 10, spd = 60, crit = 20, crit_d = 300, cap = 30;
     phantom->setattribute("HP", hp); phantom->setattribute("MAX_HP", hp);
     phantom->setattribute("MP", mp); phantom->setattribute("MAX_MP", mp);
     phantom->setattribute("ATK", atk); phantom->setattribute("MATK", matk);
     phantom->setattribute("DEF", def); phantom->setattribute("SPD", spd);
     phantom->setattribute("CRIT", crit); phantom->setattribute("CRIT_D", crit_d);
     phantom->setattribute("C_AP", cap);
-    phantom->add_buff("SELF_HEAL", 5, 999);
-    phantom->add_buff("DEFENSE_BUFF", 50, 999);
     phantom->SetRule(SLOW_BATTLE, c->GetRule(SLOW_BATTLE));
     phantom->SetRule(BATTLE_WITHOUT_OUTPUT, c->GetRule(BATTLE_WITHOUT_OUTPUT));
     phantom->get_actions().clear();
-    phantom->get_actions().push_back(std::make_unique<Attack>());
-    phantom->get_actions().push_back(std::make_unique<Attack>());
-    phantom->get_actions().push_back(std::make_unique<Attack>());
+    phantom->get_actions().push_back(std::make_unique<HealMagic>());
     phantom->get_actions().push_back(std::make_unique<VoidExplosion>());
     phantom->get_actions().push_back(std::make_unique<Smash>());
     phantom->get_actions().push_back(std::make_unique<GroundFissure>());
@@ -642,6 +654,27 @@ bool VoidGodSummon::execute(character* c, FightContext& ctx) {
     ctx.summoned->push_back(std::move(phantom));
     team->add_character(*ctx.summoned->back());
     return true;
+}
+
+Freeze::Freeze() : act(30) {
+    name_ = "冰冻术";
+    set_consume("MP", 18);
+    set_consume("C_AP", 12);
+    set_target_type(TargetType::SINGLE_ENEMY_LOWEST_HP);
+    set_description("冰魔法的分支，让敌人冻结无法行动。");
+}
+
+bool Freeze::can_execute(const character* c, const FightContext& ctx) const {
+    if (!act::can_execute(c, ctx)) return false;
+    return !ctx.enemies.empty();
+}
+
+bool Freeze::execute(character* c, FightContext& ctx) {
+    if (!can_execute(c, ctx)) return false;
+    std::vector<BuffApplication> buffs = { {"FREEZE", 0, 2} };
+    return SkillExecutor::execute_single_target_damage(
+        c, ctx, consume_, target_type_,
+        70, DamageFormula::MATK, 1.0f, name_, true, buffs);
 }
 
 // 吸血行为

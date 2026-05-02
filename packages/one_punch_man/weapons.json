@@ -1,0 +1,104 @@
+{
+  "weapons": [
+    {
+      "id": "training_gloves",
+      "name": "训练拳套",
+      "description": "埼玉日常训练用的普通拳套，虽然普通但很耐用。",
+      "rarity": "R",
+      "price": 800,
+      "attributes": {
+        "ATK": 18,
+        "CRIT": 5
+      },
+      "skill_grant": "normal_punch"
+    },
+    {
+      "id": "basic_arm",
+      "name": "基础义肢",
+      "description": "杰诺斯的备用义肢，能提供基础的焚烧炮能力。",
+      "rarity": "R",
+      "price": 800,
+      "attributes": {
+        "MATK": 18,
+        "SPD": 5
+      },
+      "skill_grant": "incinerate_cannon"
+    },
+    {
+      "id": "ninja_blade",
+      "name": "忍者短刀",
+      "description": "索尼克使用的忍刀，锋利无比，能提升攻击速度。",
+      "rarity": "SR",
+      "price": 2200,
+      "attributes": {
+        "ATK": 30,
+        "SPD": 15,
+        "CRIT": 15
+      },
+      "skill_grant": "shadow_clone"
+    },
+    {
+      "id": "psychic_ribbon",
+      "name": "念力发带",
+      "description": "龙卷常用的发带，能增幅超能力的威力。",
+      "rarity": "SR",
+      "price": 2200,
+      "attributes": {
+        "MATK": 35,
+        "CRIT": 10
+      },
+      "skill_grant": "telekinesis_storm"
+    },
+    {
+      "id": "flowing_band",
+      "name": "流水护腕",
+      "description": "饿狼修炼时佩戴的护腕，能辅助施展流水岩碎拳。",
+      "rarity": "SR",
+      "price": 2400,
+      "attributes": {
+        "ATK": 32,
+        "SPD": 12
+      },
+      "skill_grant": "flowing_water_fist"
+    },
+    {
+      "id": "hero_fist",
+      "name": "英雄拳套",
+      "description": "埼玉的专属拳套，能增幅普通拳的威力，是强者的象征。",
+      "rarity": "SSR",
+      "price": 6000,
+      "attributes": {
+        "ATK": 60,
+        "CRIT": 25,
+        "CRIT_D": 50
+      },
+      "skill_grant": "serious_punch"
+    },
+    {
+      "id": "dragon_armor",
+      "name": "暗物质铠甲",
+      "description": "波罗斯的专属铠甲，能大幅提升攻防能力，承载宇宙霸主的力量。",
+      "rarity": "SSR",
+      "price": 6000,
+      "attributes": {
+        "ATK": 40,
+        "MATK": 40,
+        "DEF": 15
+      },
+      "skill_grant": "meteor_blast"
+    },
+    {
+      "id": "genos_core",
+      "name": "杰诺斯核心",
+      "description": "杰诺斯的战斗核心，能大幅提升焚烧炮的威力，是改造人的心脏。",
+      "rarity": "SSR",
+      "price": 6500,
+      "attributes": {
+        "MATK": 60,
+        "SPD": 25,
+        "C_AP": 15
+      },
+      "skill_grant": "incinerate_cannon"
+    }
+  ]
+}

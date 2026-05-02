@@ -1,7 +1,9 @@
 ﻿// entity.cpp
 #include "entity.h"
 #include "customio.h"
+#include "console.h"
 #include "act.h"
+#include "weapon_data.h"
 #include <iomanip>
 #include <random>
 #include <chrono>
@@ -25,11 +27,68 @@ character::character() {
     init_default_actions();
 }
 
+std::unique_ptr<character> character::clone_for_battle() const {
+    auto clone = std::make_unique<character>();
+    
+    // ---- 1. 基础信息 ----
+    clone->name_ = name_;
+    clone->hashcode = hashcode;        // 保留哈希，虽然不会用于生成属性
+    
+    // 关键：禁用随机属性生成与随机技能生成
+    clone->SetRule(SUMMON_BASIC_ATTR, false);
+    clone->SetRule(SHOW_ATTRIBUTES, false);
+    
+    // ---- 2. 深拷贝属性表 ----
+    for (const auto& [key, pair] : attribute_) {
+        clone->attribute_[key] = pair;
+    }
+    // 强制满状态
+    clone->setattribute("HP", clone->get_attribute("MAX_HP"));
+    clone->setattribute("MP", clone->get_attribute("MAX_MP"));
+    // 确保行动点也正确（不重置为0）
+    // 已经通过循环拷贝，无需额外处理
+    
+    // ---- 3. 复制规则标志 ----
+    clone->rule_ = rule_;   // 直接复制整个规则表
+    
+    // ---- 4. 复制加护（可选，但一般不需要在克隆体中体现） ----
+    clone->aegis = aegis;
+    
+    // ---- 5. 深拷贝技能列表 ----
+    clone->actions_.clear();
+    for (const auto& action : actions_) {
+        const std::string& skill_name = action->get_name();
+        const SkillInfo* info = SkillRegistry::getSkillInfo(skill_name);
+        if (info != nullptr) {
+            clone->actions_.push_back(info->factory());
+        } else {
+            // 技能未注册，添加普攻作为后备
+            clone->actions_.push_back(std::make_unique<Attack>());
+        }
+    }
+    // 如果完全没有技能（不太可能），添加普攻
+    if (clone->actions_.empty()) {
+        clone->actions_.push_back(std::make_unique<Attack>());
+    }
+    
+    // ---- 6. 复制 Buff 状态（重要！否则永久 Buff 会丢失） ----
+    clone->buffs_ = buffs_;
+    
+    // ---- 7. 重置战斗统计数据 ----
+    clone->damage_dealt = 0;
+    clone->damage_taken = 0;
+    clone->kills = 0;
+    clone->healing_done = 0;
+    
+    return clone;
+}
+
 void character::attack(entity& target) {
     // 旧版攻击逻辑已弃用，现在由行为系统处理
 }
 
 character::character(std::string name) : name_(name) {
+    // ---------- 导入角色 ([:id] 格式) ----------
     if (name.length() > 4 && name[0] == '[' && name[1] == ':' && name[name.length() - 1] == ']') {
         std::string char_id = name.substr(2, name.length() - 3);
         const ImportedCharacterData* data = get_imported_character(char_id);
@@ -37,9 +96,36 @@ character::character(std::string name) : name_(name) {
             name_ = data->name;
             SetRule(SUMMON_BASIC_ATTR, false);
             SetRule(SHOW_ATTRIBUTES, true);
+
+            // 1. 应用 JSON 中明确定义的属性
             for (const auto& pair : data->attributes) {
                 setattribute(pair.first, pair.second);
             }
+
+            // 2. 补齐所有缺失的核心属性（保证战斗系统稳定）
+            const std::unordered_map<std::string, int> default_attrs = {
+                {"MAX_HP", 100}, {"HP",  100},
+                {"MAX_MP",  50}, {"MP",   50},
+                {"ATK",     30}, {"DEF",  10},
+                {"MATK",    30}, {"SPD",  20},
+                {"CRIT",    10}, {"CRIT_D", 150},
+                {"C_AP",    20}
+            };
+
+            for (const auto& [attr, val] : default_attrs) {
+                // 仅当属性不存在或值为 0 时才填入默认值
+                if (attribute_.find(attr) == attribute_.end() || get_attribute(attr) == 0) {
+                    setattribute(attr, val);
+                }
+            }
+
+            // 特殊保证：HP 和 MP 不能为 0
+            if (get_attribute("HP") == 0)
+                setattribute("HP", get_attribute("MAX_HP"));
+            if (get_attribute("MP") == 0)
+                setattribute("MP", get_attribute("MAX_MP"));
+
+            // 3. 导入技能（若 JSON 未提供则随机生成）
             if (!data->actions.empty()) {
                 actions_.clear();
                 for (const auto& action_name : data->actions) {
@@ -50,19 +136,30 @@ character::character(std::string name) : name_(name) {
                     if (info) {
                         actions_.push_back(info->factory());
                     } else {
-                        std::cout << textcolor(color::yellow) << "警告：未知行为 '" << action_name << "' 被跳过" << resetcolor() << std::endl;
+                        std::cout << customio::textcolor(customio::color::yellow)
+                                  << "警告：未知行为 '" << action_name << "' 被跳过"
+                                  << customio::resetcolor() << std::endl;
                     }
                 }
             } else {
                 init_default_actions();
             }
-            return;
+
+            // 4. 武器状态初始化
+            equipped_weapon_id_.clear();
+            weapon_bonus_.clear();
+            weapon_granted_action_ = nullptr;
+
+            return;   // 导入完成，直接返回
         }
+        // 若未找到导入数据，会继续向下执行，按普通角色创建（但此时 name 仍是原始[:id]格式）
     }
+
+    // ---------- 普通随机角色 ----------
     SetRule(SUMMON_BASIC_ATTR, true);
     SetRule(SHOW_ATTRIBUTES, true);
-    setbasicattr();
-    init_default_actions();
+    setbasicattr();            // 根据名字哈希生成属性与加护
+    init_default_actions();    // 按权重随机学习技能
 }
 
 void character::setaegis() {
@@ -222,6 +319,23 @@ void character::init_default_actions() {
 }
 
 bool character::do_action(FightContext& ctx) {
+    //如果被眩晕或者冰冻了，就不能行动
+    auto debuff_it = buffs_.find("STUNNED");
+    if (debuff_it != buffs_.end() && debuff_it->second.second > 0) {
+        if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+            const auto& theme = get_console_theme();
+            std::cout << adaptive_textcolor(theme.special) << name_ << " 被眩晕了，无法行动！" << resetcolor() << std::endl;
+        }
+        return false;
+    }
+     debuff_it = buffs_.find("FROZEN");
+    if (debuff_it != buffs_.end() && debuff_it->second.second > 0) {
+        if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+            const auto& theme = get_console_theme();
+            std::cout << adaptive_textcolor(theme.special) << name_ << " 被冰冻了，无法行动！" << resetcolor() << std::endl;
+        }
+        return false;
+    }
     std::vector<std::pair<act*, int>> available;
     int total_weight = 0;
     for (auto& action : actions_) {
@@ -279,10 +393,7 @@ void character::take_damage(int damage) {
 void character::take_damage(int damage, character* attacker) {
     if (damage <= 0) return;
 
-    // 统计承受伤害
-    damage_taken += damage;
-
-    // 防御 Buff 处理
+    // 防御 Buff 处理（先计算减免后的伤害）
     int def_buff = 0;
     auto buff_it = buffs_.find("DEFENSE_BUFF");
     if (buff_it != buffs_.end()) {
@@ -299,26 +410,35 @@ void character::take_damage(int damage, character* attacker) {
         }
     }
 
+    // 统计：使用最终减免后的伤害
+    damage_taken += damage;
+    if (attacker) {
+        attacker->damage_dealt += damage;
+    }
+
+    // 扣血
     int current_hp = get_attribute("HP");
     int new_hp = std::max(0, current_hp - damage);
     setattribute("HP", new_hp);
 
+    // 日志输出（完整恢复）
     if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
         const auto& theme = get_console_theme();
         std::cout << adaptive_textcolor(theme.text) << name_ << " 受到了 "
-                  << adaptive_textcolor(theme.damage) << damage
-                  << adaptive_textcolor(theme.text) << " 点伤害，剩余HP：" << get_attribute("HP")
-                  << resetcolor() << std::endl;
+            << adaptive_textcolor(theme.damage) << damage
+            << adaptive_textcolor(theme.text) << " 点伤害，剩余HP：" << get_attribute("HP")
+            << resetcolor() << std::endl;
     }
 
+    // 死亡处理
     if (get_attribute("HP") == 0) {
         if (attacker) {
-            attacker->kills++;
+            attacker->kills++;   // 攻击者击杀数+1
         }
         if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
             const auto& theme = get_console_theme();
             std::cout << adaptive_textcolor(theme.special) << bold() << name_
-                      << " 被击败了！" << resetcolor() << std::endl;
+                << " 被击败了！" << resetcolor() << std::endl;
         }
     }
 }
@@ -347,7 +467,7 @@ void character::setbasicattr() {
         uint64_t uh = std::abs(hashcode);
         setattribute("HP", 120 + (uh % 60), true);
         setattribute("MAX_HP", get_attribute("HP"), false);
-        setattribute("MP", 20 + ((uh >> 7) % 40), true);
+        setattribute("MP", 20 + ((uh >> 7) % 80), true);
         setattribute("ATK", 30 + ((uh >> 1) % 20), true);
         setattribute("MATK", 30 + ((uh >> 6) % 20), true);
         setattribute("DEF", 10 + ((uh >> 2) % 10), true);
@@ -443,6 +563,26 @@ void character::apply_buffs() {
                           << adaptive_textcolor(theme.text) << " 点生命！" << resetcolor() << std::endl;
             }
         }
+        else if (buff_name == "DRAIN") { // 被吸血时的特殊标记，effect表示吸血量 
+            int drain_amount = effect;
+            setattribute("HP", get_attribute("HP") - drain_amount);
+            //防止HP变成负数
+            if (get_attribute("HP") < 0) {
+                setattribute("HP", 0);
+            }
+            //吸血者获得生命
+            if (!GetRule(BATTLE_WITHOUT_OUTPUT)) {
+                const auto& theme = get_console_theme();
+                std::cout << adaptive_textcolor(theme.text) << name_ << " 被吸取了 "
+                          << adaptive_textcolor(theme.special) << drain_amount
+                          << adaptive_textcolor(theme.text) << " 点生命！" << resetcolor() << std::endl;
+            }
+
+        }
+        else if (buff_name == "STUNNED") {
+            // 眩晕效果将在 do_action 中体现，直接在这里标记即可
+        }
+
     }
 }
 
@@ -824,4 +964,81 @@ const ImportedCharacterData* get_imported_character(const std::string& char_id) 
         return &it->second;
     }
     return nullptr;
+}
+
+// 武器系统实现 
+
+bool character::equip_weapon(WeaponData& weapon) {
+    if (weapon.equipped) return false;
+    if (!equipped_weapon_id_.empty()) unequip_weapon();
+
+    // 应用属性加成
+    for (const auto& [attr, value] : weapon.attributes) {
+        int current = get_attribute(attr);
+        setattribute(attr, current + value);
+        weapon_bonus_[attr] = value;
+    }
+
+    // 如果武器提供额外技能，添加到技能列表并记录指针
+    if (!weapon.skill_grant.empty()) {
+        const SkillInfo* info = SkillRegistry::getSkillInfo(weapon.skill_grant);
+        if (info) {
+            auto new_action = info->factory();
+            weapon_granted_action_ = new_action.get();  // 保存原始指针
+            actions_.push_back(std::move(new_action));
+        }
+    }
+
+    equipped_weapon_id_ = weapon.id;
+    weapon.equipped = true;
+    return true;
+}
+
+std::string character::unequip_weapon() {
+    std::string old_id = equipped_weapon_id_;
+    if (old_id.empty()) return "";
+
+    // 还原属性
+    for (const auto& [attr, bonus] : weapon_bonus_) {
+        int current = get_attribute(attr);
+        setattribute(attr, current - bonus);
+    }
+    weapon_bonus_.clear();
+
+    // 精准移除武器授予的技能
+    if (weapon_granted_action_ != nullptr) {
+        auto it = std::find_if(actions_.begin(), actions_.end(),
+            [this](const std::unique_ptr<act>& ptr) {
+                return ptr.get() == weapon_granted_action_;
+            });
+        if (it != actions_.end()) {
+            actions_.erase(it);
+        }
+        weapon_granted_action_ = nullptr;
+    }
+
+    equipped_weapon_id_.clear();
+    return old_id;
+}
+
+const WeaponData* character::get_equipped_weapon(const std::vector<WeaponData>& weapon_library) const {
+    if (equipped_weapon_id_.empty()) return nullptr;
+    for (const auto& w : weapon_library) {
+        if (w.id == equipped_weapon_id_) return &w;
+    }
+    return nullptr;
+}
+
+double character::get_benchmark_score() const {
+    if (!is_benchmark_cached()) {
+        ensure_benchmark_cached(const_cast<character&>(*this));
+    }
+    return benchmark_score_;
+}
+
+std::string character::get_benchmark_grade() const {
+    if (!is_benchmark_cached()) {
+        ensure_benchmark_cached(const_cast<character&>(*this));
+    }
+    return benchmark_grade_;
 }

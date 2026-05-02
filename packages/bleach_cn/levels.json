@@ -1,0 +1,104 @@
+{
+  "levels": [
+    {
+      "id": "level1",
+      "name": "现世·空座町初战",
+      "description": "空座町出现了普通的虚，黑崎一护与朽木露琪亚第一次联手，清理这些游荡的怪物",
+      "max_allies": 2,
+      "reward_gold": 150,
+      "enemies": [
+        {"preset_id": "normal_hollow"},
+        {"preset_id": "normal_hollow"}
+      ]
+    },
+    {
+      "id": "level2",
+      "name": "现世·虚的群袭",
+      "description": "更多的虚涌入了空座町，街道陷入了混乱，必须尽快把它们全部清理掉",
+      "max_allies": 2,
+      "reward_gold": 200,
+      "enemies": [
+        {"preset_id": "normal_hollow"},
+        {"preset_id": "normal_hollow"},
+        {"preset_id": "normal_hollow"}
+      ]
+    },
+    {
+      "id": "level3",
+      "name": "流魂街·大虚来袭",
+      "description": "大虚基力安突破了瀞灵廷的结界，流魂街的平民陷入了危机，需要立刻阻止它",
+      "max_allies": 3,
+      "reward_gold": 300,
+      "enemies": [
+        {"preset_id": "normal_hollow"},
+        {"preset_id": "normal_hollow"},
+        {"preset_id": "gillian"}
+      ]
+    },
+    {
+      "id": "level4",
+      "name": "瀞灵廷·初入静灵庭",
+      "description": "为了救出露琪亚，一护一行人闯入了瀞灵廷，遭遇了死神卫兵的阻拦",
+      "max_allies": 3,
+      "reward_gold": 350,
+      "enemies": [
+        {"preset_id": "shinigami_scout"},
+        {"preset_id": "shinigami_scout"},
+        {"preset_id": "shinigami_scout"}
+      ]
+    },
+    {
+      "id": "level5",
+      "name": "瀞灵廷·十番队的阻拦",
+      "description": "天才队长日番谷冬狮郎带领的十番队拦住了去路，一场与死神队长的对决即将开始",
+      "max_allies": 3,
+      "reward_gold": 400,
+      "enemies": [
+        {"preset_id": "shinigami_scout"},
+        {"preset_id": "shinigami_scout"},
+        {"preset_id": "hitsugaya"}
+      ]
+    },
+    {
+      "id": "level6",
+      "name": "虚圈·沙漠的威胁",
+      "description": "进入了虚圈，这里的虚比现世的要强得多，大虚的威胁无处不在",
+      "max_allies": 4,
+      "reward_gold": 450,
+      "enemies": [
+        {"preset_id": "gillian"},
+        {"preset_id": "adjuchas"}
+      ]
+    },
+    {
+      "id": "level7",
+      "name": "虚圈·第六刃的挑战",
+      "description": "破面十刃之六的葛力姆乔发起了挑战，好战的豹王想要和一护分出胜负",
+      "max_allies": 4,
+      "reward_gold": 800,
+      "enemies": [
+        {"preset_id": "grimmjow"}
+      ]
+    },
+    {
+      "id": "level8",
+      "name": "虚圈·第四刃的决战",
+      "description": "乌尔奇奥拉展现了他的真正力量，归刃后的黑翼大魔，这是一场生死之战",
+      "max_allies": 4,
+      "reward_gold": 1000,
+      "enemies": [
+        {"preset_id": "ulquiorra_boss"}
+      ]
+    },
+    {
+      "id": "level9",
+      "name": "空座町·最终决战",
+      "description": "蓝染惣右介的阴谋终于浮出水面，所有的伙伴都集结起来，为了守护世界，进行最终的决战",
+      "max_allies": 5,
+      "reward_gold": 1500,
+      "enemies": [
+        {"preset_id": "aizen"}
+      ]
+    }
+  ]
+}

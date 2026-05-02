@@ -1,0 +1,74 @@
+{
+  "weapons": [
+    {
+      "id": "zanpakuto_basic",
+      "name": "普通斩魄刀",
+      "description": "最基础的死神斩魄刀，还未觉醒始解，是每个死神的标配武器",
+      "rarity": "R",
+      "price": 800,
+      "attributes": {
+        "ATK": 10
+      }
+    },
+    {
+      "id": "zanpakuto_shikai",
+      "name": "始解斩魄刀",
+      "description": "完成了始解的斩魄刀，能够释放基础的斩魄刀技能，威力大幅提升",
+      "rarity": "SR",
+      "price": 3000,
+      "attributes": {
+        "ATK": 20,
+        "CRIT": 5
+      }
+    },
+    {
+      "id": "zangetsu_shikai",
+      "name": "斩月（始解）",
+      "description": "黑崎一护的斩魄刀始解形态，无刀柄的巨大菜刀，能够释放月牙天冲",
+      "rarity": "SR",
+      "price": 3500,
+      "attributes": {
+        "ATK": 22,
+        "MATK": 10
+      },
+      "skill_grant": "getsuga_tensho"
+    },
+    {
+      "id": "hyorinmaru_shikai",
+      "name": "冰轮丸（始解）",
+      "description": "日番谷冬狮郎的斩魄刀始解形态，冰系斩魄刀，能够操控冰雪",
+      "rarity": "SR",
+      "price": 3200,
+      "attributes": {
+        "MATK": 22,
+        "SPD": 5
+      },
+      "skill_grant": "ryusenka"
+    },
+    {
+      "id": "zangetsu_bankai",
+      "name": "天锁斩月",
+      "description": "黑崎一护的卍解形态，将所有的力量压缩在一把小刀中，速度与力量的极致",
+      "rarity": "SSR",
+      "price": 8000,
+      "attributes": {
+        "ATK": 35,
+        "SPD": 10,
+        "CRIT": 10
+      },
+      "skill_grant": "getsuga_juji"
+    },
+    {
+      "id": "hyorinmaru_bankai",
+      "name": "大红莲冰轮丸",
+      "description": "日番谷冬狮郎的卍解形态，冰系最强斩魄刀，能够冻结整个战场",
+      "rarity": "SSR",
+      "price": 7500,
+      "attributes": {
+        "MATK": 35,
+        "DEF": 10
+      },
+      "skill_grant": "hyoten_hyourin"
+    }
+  ]
+}

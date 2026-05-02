@@ -1,0 +1,103 @@
+{
+  "levels": [
+    {
+      "id": "opm_city_1",
+      "name": "城市异变",
+      "description": "疫苗人现身城市，自称地球的使者，开始破坏街道。",
+      "max_allies": 2,
+      "reward_gold": 100,
+      "enemies": [
+        {
+          "preset_id": "vaccine_man"
+        }
+      ]
+    },
+    {
+      "id": "opm_coast_1",
+      "name": "深海来袭",
+      "description": "深海王登陆城市，怪人肆虐，英雄们陷入苦战。",
+      "max_allies": 3,
+      "reward_gold": 150,
+      "enemies": [
+        {
+          "preset_id": "deep_sea_king"
+        }
+      ]
+    },
+    {
+      "id": "opm_ninja_1",
+      "name": "忍者的挑战",
+      "description": "音速索尼克向你发起挑战，自称最强忍者，要证明自己的实力。",
+      "max_allies": 3,
+      "reward_gold": 200,
+      "enemies": [
+        {
+          "preset_id": "sonic"
+        }
+      ]
+    },
+    {
+      "id": "opm_hunter_1",
+      "name": "饿狼的狩猎",
+      "description": "饿狼开始狩猎英雄，流水岩碎拳威力惊人，无人能轻易抵挡。",
+      "max_allies": 4,
+      "reward_gold": 250,
+      "enemies": [
+        {
+          "preset_id": "garou"
+        }
+      ]
+    },
+    {
+      "id": "opm_psychic_1",
+      "name": "超能力对决",
+      "description": "战栗的龙卷清理怪人，超强超能力席卷全场。",
+      "max_allies": 4,
+      "reward_gold": 300,
+      "enemies": [
+        {
+          "preset_id": "tatsumaki"
+        }
+      ]
+    },
+    {
+      "id": "opm_king_1",
+      "name": "KING的威压",
+      "description": "帝王引擎启动，仅凭气场就让所有怪人不敢靠近。",
+      "max_allies": 4,
+      "reward_gold": 350,
+      "enemies": [
+        {
+          "preset_id": "king"
+        },
+        {
+          "preset_id": "genos"
+        }
+      ]
+    },
+    {
+      "id": "opm_boros_1",
+      "name": "宇宙霸主降临",
+      "description": "波罗斯率领暗物质海贼团入侵地球，寻找能与自己一战的对手。",
+      "max_allies": 5,
+      "reward_gold": 400,
+      "enemies": [
+        {
+          "preset_id": "boros"
+        }
+      ]
+    },
+    {
+      "id": "opm_saitama_1",
+      "name": "最强的试炼",
+      "description": "埼玉老师站在你面前，接受最强者的最终试炼。",
+      "max_allies": 5,
+      "reward_gold": 500,
+      "enemies": [
+        {
+          "preset_id": "saitama"
+        }
+      ]
+    }
+  ]
+}

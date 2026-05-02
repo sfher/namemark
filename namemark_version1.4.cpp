@@ -3,7 +3,7 @@
 #include "customio.h"
 #include "console.h"
 #include "act.h"
-#include "game.h"        // 新增
+#include "game.h"    
 #include <windows.h>
 
 using namespace customio;

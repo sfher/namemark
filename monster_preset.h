@@ -15,6 +15,7 @@ struct MonsterPreset {
 class MonsterPresetManager {
 public:
     bool load_from_json(const std::string& filepath);
+    bool load_from_package(const std::string& package_path);
     const MonsterPreset* get_preset(const std::string& id) const;
     bool has_preset(const std::string& id) const;
 

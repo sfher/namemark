@@ -18,13 +18,14 @@ bool LevelManager::load_from_json(const std::string& filepath) {
     try {
         json data = json::parse(file);
         for (const auto& level_item : data["levels"]) {   // 使用 level_item 避免与 LevelData 混淆
-            LevelData lv;                                  // 使用 lv 避免与局部变量冲突
+            LevelData lv;                           
             lv.id = level_item.value("id", "");
             lv.name = Utf8ToAnsi(level_item.value("name", ""));
             lv.description = Utf8ToAnsi(level_item.value("description", ""));
             lv.max_allies = level_item.value("max_allies", 3);
             lv.unlocked = level_item.value("unlocked", (levels_.size() == 0));
             lv.completed = level_item.value("completed", false);
+            lv.reward_gold = level_item.value("reward_gold", 300);
 
             for (const auto& enemy_item : level_item["enemies"]) {   // 使用 enemy_item
                 EnemySpawn spawn;
@@ -91,4 +92,10 @@ bool LevelManager::load_from_directory(const std::string& dir_path) {
         }
     }
     return any_loaded;
+}
+
+bool LevelManager::load_from_package(const std::string& package_path) {
+    levels_.clear();  // 清空旧数据
+    std::string filepath = package_path + "/levels.json";
+    return load_from_json(filepath);
 }

@@ -72,6 +72,7 @@ public:
     static void registerSkill(const std::string& id, const SkillInfo& info);
     static const SkillInfo* getSkillInfo(const std::string& id);
     static const std::unordered_map<std::string, SkillInfo>& getAllSkills();
+    static void clearAll();
 private:
     static std::unordered_map<std::string, SkillInfo> skills_;
 };
@@ -134,6 +135,14 @@ public:
 class Fireball : public act {
 public:
     Fireball();
+    bool can_execute(const character* c, const FightContext& ctx) const override;
+    bool execute(character* c, FightContext& ctx) override;
+};
+
+//冰冻术
+class Freeze : public act {
+public:
+    Freeze();
     bool can_execute(const character* c, const FightContext& ctx) const override;
     bool execute(character* c, FightContext& ctx) override;
 };

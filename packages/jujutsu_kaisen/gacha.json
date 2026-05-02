@@ -1,0 +1,41 @@
+﻿{
+  "single_cost": 300,
+  "ten_cost": 2800,
+  "pools": {
+    "SSR": {
+      "rate": 0.02,
+      "items": [
+        { "type": "character", "preset_id": "gojo" },
+        { "type": "character", "preset_id": "nanami" },
+        { "type": "character", "preset_id": "toji_fushiguro" },
+        { "type": "character", "preset_id": "ryomen_sukuna" },
+        { "type": "weapon", "weapon_id": "inverted_spear" },
+        { "type": "weapon", "weapon_id": "black_rope" },
+        { "type": "weapon", "weapon_id": "playful_cloud" }
+      ]
+    },
+    "SR": {
+      "rate": 0.14,
+      "items": [
+        { "type": "character", "preset_id": "fushiguro" },
+        { "type": "character", "preset_id": "jogo" },
+        { "type": "character", "preset_id": "hanami" },
+        { "type": "character", "preset_id": "naoya_zenin" },
+        { "type": "weapon", "weapon_id": "cursed_katana" },
+        { "type": "weapon", "weapon_id": "katana_of_man" }
+      ]
+    },
+    "R": {
+      "rate": 0.84,
+      "items": [
+        { "type": "character", "preset_id": "flyhead" },
+        { "type": "character", "preset_id": "rainbow_dragon" },
+        { "type": "character", "preset_id": "mahito" },
+        { "type": "character", "preset_id": "flyhead_swarm" },
+        { "type": "character", "preset_id": "transfigured_human" },
+        { "type": "weapon", "weapon_id": "slaughter_demon" },
+        { "type": "weapon", "weapon_id": "vajra" }
+      ]
+    }
+  }
+}

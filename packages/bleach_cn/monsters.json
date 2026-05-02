@@ -1,0 +1,200 @@
+{
+  "monsters": [
+    {
+      "id": "ichigo",
+      "name": "黑崎一护",
+      "description": "代理死神，拥有死神、灭却师与虚的多重力量，为了守护空座町而战",
+      "attributes": {
+        "HP": 240, "MAX_HP": 240,
+        "MP": 60, "MAX_MP": 60,
+        "ATK": 58, "DEF": 35,
+        "MATK": 55, "SPD": 40,
+        "CRIT": 20, "CRIT_D": 180,
+        "C_AP": 35
+      },
+      "actions": ["attack", "getsuga_tensho", "getsuga_juji"]
+    },
+    {
+      "id": "rukia",
+      "name": "朽木露琪亚",
+      "description": "朽木家的千金，将死神的力量借给了一护，擅长冰系与雷系鬼道",
+      "attributes": {
+        "HP": 210, "MAX_HP": 210,
+        "MP": 70, "MAX_MP": 70,
+        "ATK": 48, "DEF": 30,
+        "MATK": 60, "SPD": 45,
+        "CRIT": 15, "CRIT_D": 150,
+        "C_AP": 38
+      },
+      "actions": ["attack", "shirai", "tsukishiro"]
+    },
+    {
+      "id": "ishida",
+      "name": "石田雨龙",
+      "description": "最后的灭却师，擅长远程灵箭攻击，能够精准打击敌人弱点",
+      "attributes": {
+        "HP": 180, "MAX_HP": 180,
+        "MP": 65, "MAX_MP": 65,
+        "ATK": 52, "DEF": 25,
+        "MATK": 45, "SPD": 42,
+        "CRIT": 22, "CRIT_D": 160,
+        "C_AP": 36
+      },
+      "actions": ["attack", "seele_schneider", "arrow_rain"]
+    },
+    {
+      "id": "sado",
+      "name": "茶渡泰虎",
+      "description": "拥有巨人的右臂与恶魔的左臂，力量强大，是团队的坚实肉盾",
+      "attributes": {
+        "HP": 240, "MAX_HP": 240,
+        "MP": 40, "MAX_MP": 40,
+        "ATK": 55, "DEF": 40,
+        "MATK": 30, "SPD": 25,
+        "CRIT": 10, "CRIT_D": 150,
+        "C_AP": 30
+      },
+      "actions": ["attack", "el_duro", "mundo"]
+    },
+    {
+      "id": "orihime",
+      "name": "井上织姬",
+      "description": "拥有盾舜六花的特殊能力，能够治愈队友、抵挡伤害甚至逆转攻击",
+      "attributes": {
+        "HP": 200, "MAX_HP": 200,
+        "MP": 75, "MAX_MP": 75,
+        "ATK": 35, "DEF": 28,
+        "MATK": 50, "SPD": 35,
+        "CRIT": 8, "CRIT_D": 140,
+        "C_AP": 32
+      },
+      "actions": ["attack", "santen_keisan", "koten_otsu"]
+    },
+    {
+      "id": "hitsugaya",
+      "name": "日番谷冬狮郎",
+      "description": "护廷十三队十番队队长，天才少年，拥有冰系最强斩魄刀冰轮丸",
+      "attributes": {
+        "HP": 200, "MAX_HP": 200,
+        "MP": 70, "MAX_MP": 70,
+        "ATK": 50, "DEF": 32,
+        "MATK": 65, "SPD": 50,
+        "CRIT": 18, "CRIT_D": 160,
+        "C_AP": 40
+      },
+      "actions": ["attack", "hyoten_hyourin", "ryusenka"]
+    },
+    {
+      "id": "ulquiorra",
+      "name": "乌尔奇奥拉·西法",
+      "description": "破面十刃之四，拥有二段归刃的力量，冷静而强大的虚圈战士",
+      "attributes": {
+        "HP": 250, "MAX_HP": 250,
+        "MP": 65, "MAX_MP": 65,
+        "ATK": 60, "DEF": 38,
+        "MATK": 60, "SPD": 48,
+        "CRIT": 25, "CRIT_D": 170,
+        "C_AP": 38
+      },
+      "actions": ["attack", "cero", "oscuras"]
+    },
+    {
+      "id": "normal_hollow",
+      "name": "普通虚",
+      "description": "最基础的虚，以人类的灵魂为食，在现世与流魂街游荡",
+      "attributes": {
+        "HP": 100, "MAX_HP": 100,
+        "MP": 20, "MAX_MP": 20,
+        "ATK": 25, "DEF": 15,
+        "MATK": 20, "SPD": 20,
+        "CRIT": 5, "CRIT_D": 150,
+        "C_AP": 25
+      },
+      "actions": ["attack"]
+    },
+    {
+      "id": "shinigami_scout",
+      "name": "死神斥候",
+      "description": "瀞灵廷的普通死神卫兵，负责阻拦入侵者",
+      "attributes": {
+        "HP": 120, "MAX_HP": 120,
+        "MP": 25, "MAX_MP": 25,
+        "ATK": 30, "DEF": 18,
+        "MATK": 25, "SPD": 28,
+        "CRIT": 8, "CRIT_D": 150,
+        "C_AP": 28
+      },
+      "actions": ["attack", "magic_missile"]
+    },
+    {
+      "id": "gillian",
+      "name": "基力安",
+      "description": "大虚的最低级形态，由数百只虚融合而成，体型巨大力量惊人",
+      "attributes": {
+        "HP": 220, "MAX_HP": 220,
+        "MP": 40, "MAX_MP": 40,
+        "ATK": 45, "DEF": 25,
+        "MATK": 40, "SPD": 15,
+        "CRIT": 10, "CRIT_D": 150,
+        "C_AP": 25
+      },
+      "actions": ["attack", "cero"]
+    },
+    {
+      "id": "adjuchas",
+      "name": "亚丘卡斯",
+      "description": "大虚的中级形态，拥有自我意识，能够使用响转与虚闪",
+      "attributes": {
+        "HP": 260, "MAX_HP": 260,
+        "MP": 50, "MAX_MP": 50,
+        "ATK": 50, "DEF": 30,
+        "MATK": 45, "SPD": 35,
+        "CRIT": 15, "CRIT_D": 160,
+        "C_AP": 32
+      },
+      "actions": ["attack", "cero", "sonido"]
+    },
+    {
+      "id": "grimmjow",
+      "name": "葛力姆乔·贾卡杰克",
+      "description": "破面十刃之六，好战的豹王，渴望与强者一战",
+      "attributes": {
+        "HP": 400, "MAX_HP": 400,
+        "MP": 55, "MAX_MP": 55,
+        "ATK": 65, "DEF": 35,
+        "MATK": 50, "SPD": 55,
+        "CRIT": 25, "CRIT_D": 170,
+        "C_AP": 35
+      },
+      "actions": ["attack", "cero", "desgarron"]
+    },
+    {
+      "id": "ulquiorra_boss",
+      "name": "乌尔奇奥拉·西法（归刃）",
+      "description": "乌尔奇奥拉的归刃形态，黑翼大魔，拥有远超普通十刃的力量",
+      "attributes": {
+        "HP": 450, "MAX_HP": 450,
+        "MP": 65, "MAX_MP": 65,
+        "ATK": 70, "DEF": 40,
+        "MATK": 65, "SPD": 60,
+        "CRIT": 28, "CRIT_D": 180,
+        "C_AP": 40
+      },
+      "actions": ["attack", "cero", "oscuras", "regeneration"]
+    },
+    {
+      "id": "aizen",
+      "name": "蓝染惣右介",
+      "description": "护廷十三队五番队前队长，整个故事的幕后黑手，拥有镜花水月的绝对掌控力",
+      "attributes": {
+        "HP": 600, "MAX_HP": 600,
+        "MP": 80, "MAX_MP": 80,
+        "ATK": 80, "DEF": 45,
+        "MATK": 80, "SPD": 50,
+        "CRIT": 30, "CRIT_D": 200,
+        "C_AP": 45
+      },
+      "actions": ["attack", "kuroi_hitsugi", "kyoka_suigetsu", "mugen"]
+    }
+  ]
+}

@@ -1,0 +1,209 @@
+{
+  "monsters": [
+    {
+      "id": "saitama",
+      "name": "埼玉",
+      "attributes": {
+        "HP": 350,
+        "MAX_HP": 350,
+        "MP": 70,
+        "MAX_MP": 70,
+        "ATK": 70,
+        "DEF": 45,
+        "MATK": 50,
+        "SPD": 40,
+        "CRIT": 25,
+        "CRIT_D": 180,
+        "C_AP": 50
+      },
+      "actions": [
+        "normal_punch",
+        "consecutive_punches",
+        "serious_punch",
+        "meditate"
+      ]
+    },
+    {
+      "id": "genos",
+      "name": "杰诺斯",
+      "attributes": {
+        "HP": 280,
+        "MAX_HP": 280,
+        "MP": 75,
+        "MAX_MP": 75,
+        "ATK": 68,
+        "DEF": 40,
+        "MATK": 62,
+        "SPD": 40,
+        "CRIT": 25,
+        "CRIT_D": 185,
+        "C_AP": 40
+      },
+      "actions": [
+        "attack",
+        "incinerate_cannon",
+        "smash",
+        "meditate"
+      ]
+    },
+    {
+      "id": "tatsumaki",
+      "name": "战栗的龙卷",
+      "attributes": {
+        "HP": 260,
+        "MAX_HP": 260,
+        "MP": 85,
+        "MAX_MP": 85,
+        "ATK": 32,
+        "DEF": 30,
+        "MATK": 80,
+        "SPD": 45,
+        "CRIT": 22,
+        "CRIT_D": 180,
+        "C_AP": 45
+      },
+      "actions": [
+        "magic_missile",
+        "telekinesis_storm",
+        "defense",
+        "meditate"
+      ]
+    },
+    {
+      "id": "boros",
+      "name": "波罗斯",
+      "attributes": {
+        "HP": 380,
+        "MAX_HP": 380,
+        "MP": 85,
+        "MAX_MP": 85,
+        "ATK": 75,
+        "DEF": 48,
+        "MATK": 70,
+        "SPD": 42,
+        "CRIT": 26,
+        "CRIT_D": 190,
+        "C_AP": 52
+      },
+      "actions": [
+        "attack",
+        "meteor_blast",
+        "combo",
+        "meditate"
+      ]
+    },
+    {
+      "id": "garou",
+      "name": "饿狼",
+      "attributes": {
+        "HP": 330,
+        "MAX_HP": 330,
+        "MP": 65,
+        "MAX_MP": 65,
+        "ATK": 72,
+        "DEF": 42,
+        "MATK": 38,
+        "SPD": 48,
+        "CRIT": 28,
+        "CRIT_D": 185,
+        "C_AP": 48
+      },
+      "actions": [
+        "flowing_water_fist",
+        "smash",
+        "counter",
+        "meditate"
+      ]
+    },
+    {
+      "id": "deep_sea_king",
+      "name": "深海王",
+      "attributes": {
+        "HP": 290,
+        "MAX_HP": 290,
+        "MP": 55,
+        "MAX_MP": 55,
+        "ATK": 62,
+        "DEF": 40,
+        "MATK": 32,
+        "SPD": 38,
+        "CRIT": 20,
+        "CRIT_D": 170,
+        "C_AP": 38
+      },
+      "actions": [
+        "attack",
+        "deep_sea_regen",
+        "smash",
+        "poison_magic"
+      ]
+    },
+    {
+      "id": "vaccine_man",
+      "name": "疫苗人",
+      "attributes": {
+        "HP": 220,
+        "MAX_HP": 220,
+        "MP": 50,
+        "MAX_MP": 50,
+        "ATK": 55,
+        "DEF": 30,
+        "MATK": 50,
+        "SPD": 35,
+        "CRIT": 18,
+        "CRIT_D": 160,
+        "C_AP": 32
+      },
+      "actions": [
+        "magic_missile",
+        "fireball",
+        "meditate"
+      ]
+    },
+    {
+      "id": "king",
+      "name": "KING",
+      "attributes": {
+        "HP": 200,
+        "MAX_HP": 200,
+        "MP": 25,
+        "MAX_MP": 25,
+        "ATK": 20,
+        "DEF": 60,
+        "MATK": 15,
+        "SPD": 25,
+        "CRIT": 8,
+        "CRIT_D": 160,
+        "C_AP": 28
+      },
+      "actions": [
+        "king_engine",
+        "defense",
+        "fake_attack"
+      ]
+    },
+    {
+      "id": "sonic",
+      "name": "音速的索尼克",
+      "attributes": {
+        "HP": 200,
+        "MAX_HP": 200,
+        "MP": 45,
+        "MAX_MP": 45,
+        "ATK": 58,
+        "DEF": 25,
+        "MATK": 22,
+        "SPD": 52,
+        "CRIT": 32,
+        "CRIT_D": 180,
+        "C_AP": 35
+      },
+      "actions": [
+        "attack",
+        "shadow_clone",
+        "speedup",
+        "smash"
+      ]
+    }
+  ]
+}

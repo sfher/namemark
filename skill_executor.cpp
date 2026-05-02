@@ -64,22 +64,17 @@ bool SkillExecutor::hit_check(character* caster, int hit_rate) {
 }
 
 void SkillExecutor::apply_damage_and_buffs(
-    character* caster,
-    character* target,
-    int damage,
+    character* caster, character* target, int damage,
     const std::vector<BuffApplication>& buffs,
     std::function<void(character*, character*, int)> on_hit_callback)
 {
     if (!caster || !target) return;
 
-    // 记录伤害
-    caster->damage_dealt += damage;
-    target->take_damage(damage, caster);
+    target->take_damage(damage, caster);   // 内部已完成统计 + 日志
 
     for (const auto& buff : buffs) {
         target->add_buff(buff.buff_name, buff.effect, buff.duration);
     }
-
     if (on_hit_callback) {
         on_hit_callback(caster, target, damage);
     }

@@ -1,0 +1,252 @@
+{
+  "skills": [
+    {
+      "id": "normal_punch",
+      "display_name": "普通一拳",
+      "description": "埼玉的普通一拳，看似平平无奇，却蕴含着远超常人的威力。",
+      "acquire_chance": 100,
+      "weight": 8,
+      "base_probability": 95,
+      "consume": {
+        "C_AP": 20
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 95,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 1.5,
+      "use_def": true,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "consecutive_punches",
+      "display_name": "连续普通拳",
+      "description": "左右开弓快速出拳，在瞬间打出数十记普通拳，压制力拉满。",
+      "acquire_chance": 80,
+      "weight": 9,
+      "base_probability": 90,
+      "consume": {
+        "C_AP": 30
+      },
+      "target_type": "SINGLE_ENEMY_LOWEST_HP",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 90,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 2.2,
+      "use_def": true,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "serious_punch",
+      "display_name": "认真一拳",
+      "description": "认真系列·认真一拳，埼玉全力出击的招式，造成毁灭性的单体伤害。",
+      "acquire_chance": 50,
+      "weight": 10,
+      "base_probability": 80,
+      "consume": {
+        "C_AP": 45,
+        "MP": 10
+      },
+      "target_type": "SINGLE_ENEMY_HIGHEST_ATK",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "ATK_POWER",
+      "dmg_coeff": 3.0,
+      "use_def": false,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "incinerate_cannon",
+      "display_name": "焚烧炮",
+      "description": "杰诺斯的招牌技能，手臂喷射出高温火焰，灼烧所有敌人。",
+      "acquire_chance": 80,
+      "weight": 8,
+      "base_probability": 85,
+      "consume": {
+        "MP": 30,
+        "C_AP": 20
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "MATK",
+      "dmg_coeff": 1.4,
+      "use_def": true,
+      "split_damage": false,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [
+        {
+          "buff_name": "BURN",
+          "effect": 10,
+          "duration": 2
+        }
+      ],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "telekinesis_storm",
+      "display_name": "念动风暴",
+      "description": "龙卷的超能力，卷起强大的念力风暴，对全体敌人造成巨额魔法伤害。",
+      "acquire_chance": 70,
+      "weight": 9,
+      "base_probability": 80,
+      "consume": {
+        "MP": 40,
+        "C_AP": 25
+      },
+      "target_type": "ALL_ENEMIES",
+      "executor_type": "AOE_DAMAGE",
+      "hit_rate": 80,
+      "dmg_formula": "MATK_POWER",
+      "dmg_coeff": 1.8,
+      "use_def": true,
+      "split_damage": false,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "flowing_water_fist",
+      "display_name": "流水岩碎拳",
+      "description": "饿狼的流水拳，以柔克刚的连击，造成混合伤害并提升自身速度。",
+      "acquire_chance": 80,
+      "weight": 8,
+      "base_probability": 85,
+      "consume": {
+        "C_AP": 28
+      },
+      "target_type": "SINGLE_ENEMY_RANDOM",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 90,
+      "dmg_formula": "ATK_MATK_SUM",
+      "dmg_coeff": 1.8,
+      "use_def": true,
+      "random_available": false,
+      "self_buffs": [
+        {
+          "buff_name": "SPD_BUFF",
+          "effect": 15,
+          "duration": 2
+        }
+      ],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "meteor_blast",
+      "display_name": "流星爆发",
+      "description": "波罗斯的高速冲击，以流星般的速度撞向敌人，造成巨额物理伤害。",
+      "acquire_chance": 70,
+      "weight": 9,
+      "base_probability": 80,
+      "consume": {
+        "C_AP": 35,
+        "MP": 15
+      },
+      "target_type": "SINGLE_ENEMY_HIGHEST_ATK",
+      "executor_type": "SINGLE_DAMAGE",
+      "hit_rate": 85,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 2.5,
+      "use_def": false,
+      "random_available": false,
+      "self_buffs": [],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "king_engine",
+      "display_name": "帝王引擎",
+      "description": "KING的帝王引擎启动，心跳声震慑全场，大幅提升自身防御。",
+      "acquire_chance": 60,
+      "weight": 6,
+      "base_probability": 100,
+      "consume": {
+        "C_AP": 15
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "random_available": false,
+      "self_buffs": [
+        {
+          "buff_name": "DEFENSE_BUFF",
+          "effect": 60,
+          "duration": 2
+        }
+      ],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "shadow_clone",
+      "display_name": "影分身之术",
+      "description": "索尼克的忍术，分出多个影分身迷惑敌人，大幅提升自身速度。",
+      "acquire_chance": 70,
+      "weight": 7,
+      "base_probability": 90,
+      "consume": {
+        "C_AP": 20,
+        "MP": 10
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "random_available": false,
+      "self_buffs": [
+        {
+          "buff_name": "SPD_BUFF",
+          "effect": 30,
+          "duration": 2
+        }
+      ],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    },
+    {
+      "id": "deep_sea_regen",
+      "display_name": "深海再生",
+      "description": "深海王的再生能力，在水中快速恢复自身的生命值。",
+      "acquire_chance": 60,
+      "weight": 6,
+      "base_probability": 95,
+      "consume": {
+        "MP": 15,
+        "C_AP": 10
+      },
+      "target_type": "NONE",
+      "executor_type": "SELF_BUFF",
+      "hit_rate": 100,
+      "dmg_formula": "ATK",
+      "dmg_coeff": 0,
+      "use_def": false,
+      "random_available": false,
+      "self_buffs": [
+        {
+          "buff_name": "SELF_HEAL",
+          "effect": 15,
+          "duration": 3
+        }
+      ],
+      "on_hit_buffs": [],
+      "attr_modifiers": {}
+    }
+  ]
+}
