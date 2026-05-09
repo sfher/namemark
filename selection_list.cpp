@@ -13,22 +13,34 @@ std::vector<size_t> SelectionList::run(RenderItemFunc render_func) {
     render_page(render_func);
 
     while (running) {
+#ifdef _WIN32
         int ch = _getch();
-        if (ch == 224) { // 方向键
+        if (ch == 224) {
             ch = _getch();
             size_t old_cursor = cursor_index_;
-            if (ch == 72 && cursor_index_ > 0) { // 上
-                cursor_index_--;
-            }
-            else if (ch == 80 && cursor_index_ < item_count_ - 1) { // 下
-                cursor_index_++;
-            }
+            if (ch == 72 && cursor_index_ > 0) cursor_index_--;
+            else if (ch == 80 && cursor_index_ < item_count_ - 1) cursor_index_++;
 
             if (old_cursor != cursor_index_) {
-                // 重新绘制当前页（光标位置改变）
                 render_page(render_func);
             }
         }
+#else
+        int ch = getch();
+        if (ch == '\x1b') {
+            ch = getch();
+            if (ch == '[') {
+                ch = getch();
+                size_t old_cursor = cursor_index_;
+                if (ch == 'A' && cursor_index_ > 0) cursor_index_--;
+                else if (ch == 'B' && cursor_index_ < item_count_ - 1) cursor_index_++;
+
+                if (old_cursor != cursor_index_) {
+                    render_page(render_func);
+                }
+            }
+        }
+#endif
         else if (ch == 32) { // 空格键
             if (cursor_index_ < item_count_) {
                 bool currently_selected = selected_[cursor_index_];

@@ -15,8 +15,6 @@
 #include "console.h"
 #include <iostream>
 #include <fstream>
-#include <conio.h>
-
 using namespace customio;
 
 Game::Game() {
@@ -134,7 +132,7 @@ void Game::run() {
 
     if (!ok) {
         std::cout << "模组加载失败，请检查文件。\n按任意键退出...";
-        _getch();
+        getch();
         return;
     }
 

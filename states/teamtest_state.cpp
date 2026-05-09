@@ -5,7 +5,6 @@
 #include "../act.h"
 #include <iostream>
 #include <iomanip>
-#include <conio.h>
 #include <algorithm>
 
 using namespace customio;
@@ -17,7 +16,7 @@ void TeamTestState::select_team(const std::string& title, size_t max_selection,
                                 std::vector<size_t>& result) {
     if (ctx_.all_characters.empty()) {
         std::cout << "没有可用的角色。\n";
-        _getch();
+        getch();
         return;
     }
 
@@ -99,7 +98,7 @@ void TeamTestState::start_exercise() {
         for (size_t b : teamB_idx) {
             if (a == b) {
                 std::cout << "队伍 A 和队伍 B 不能包含同一个角色！\n按任意键返回...";
-                _getch();
+                getch();
                 return;
             }
         }
@@ -139,7 +138,7 @@ void TeamTestState::start_exercise() {
     restore_snapshots(snapshots);
 
     std::cout << "\n按任意键继续...";
-    _getch();
+    getch();
 }
 
 void TeamTestState::print_exercise_report(Team& teamA, Team& teamB) {
@@ -193,7 +192,7 @@ void TeamTestState::update() {
 
     if (ctx_.all_characters.size() < 2) {
         std::cout << "角色不足，至少需要2名角色。\n按任意键返回...";
-        _getch();
+        getch();
         Game::getInstance().changeState(GameStateType::LOBBY);
         return;
     }

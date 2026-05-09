@@ -6,7 +6,6 @@
 #include "../act.h"       // SkillRegistry, make_unique<Attack> etc.
 #include <iostream>
 #include <iomanip>
-#include <conio.h>
 #include <algorithm>
 #include <memory>
 
@@ -84,7 +83,7 @@ void AdventureState::show_level_list_menu() {
     if (level_count == 0) {
         std::cout << "没有可用关卡。\n";
         std::cout << "按任意键继续...";
-        _getch();
+        getch();
         return;
     }
 
@@ -318,6 +317,6 @@ bool AdventureState::play_level(int level_index) {
     }
 
     std::cout << "\n按任意键继续...";
-    _getch();
+    getch();
     return victory;
 }
