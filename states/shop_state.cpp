@@ -6,7 +6,6 @@
 #include "../weapon_data.h"
 #include <iostream>
 #include <iomanip>
-#include <conio.h>
 #include <algorithm>
 
 using namespace customio;
@@ -24,7 +23,7 @@ void ShopState::show_weapon_list() {
     // 检查武器模板库，而不是玩家武器库
     if (ctx_.weapon_templates.empty()) {
         std::cout << "当前模组没有武器可购买。\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
 
@@ -63,7 +62,7 @@ void ShopState::show_weapon_list() {
 void ShopState::buy_weapon(const WeaponData& weapon_template) {
     if (ctx_.gold < weapon_template.price) {
         std::cout << "金币不足！\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
     show_character_select_for_weapon(weapon_template);
@@ -72,7 +71,7 @@ void ShopState::buy_weapon(const WeaponData& weapon_template) {
 void ShopState::show_character_select_for_weapon(const WeaponData& weapon_template) {
     if (ctx_.all_characters.empty()) {
         std::cout << "没有可装备的角色，请先创建角色。\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
 
@@ -118,7 +117,7 @@ void ShopState::show_character_select_for_weapon(const WeaponData& weapon_templa
         ctx_.weapons.pop_back();
         std::cout << "装备失败！\n按任意键返回...";
     }
-    _getch();
+    getch();
 }
 
 void ShopState::update() {

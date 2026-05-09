@@ -24,7 +24,7 @@ void TeamState::add_new_character() {
     ctx_.all_characters.push_back(std::move(ch));
     std::cout << adaptive_textcolor(theme.info) << "OK！ " << name << " 加入了队伍！\n" << resetcolor();
     std::cout << "按任意键继续...";
-    _getch();
+    getch();
 }
 
 void TeamState::list_characters() {
@@ -100,14 +100,14 @@ void TeamState::select_team() {
     ctx_.selected_team = std::move(new_selected);
     std::cout << "\n出战队伍已更新！当前出战角色: " << ctx_.selected_team.size() << " 人\n";
     std::cout << "按任意键继续...";
-    char ch = _getch();
+    char ch = getch();
 }
 
 
 void TeamState::view_character_detail() {
     if (ctx_.all_characters.empty()) {
         std::cout << "当前没有任何角色。\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
 
@@ -201,13 +201,26 @@ void TeamState::view_character_detail() {
     draw();
 
     while (running) {
-        int ch = _getch();
-        if (ch == 224) { // 方向键
-            ch = _getch();
+#ifdef _WIN32
+        int ch = getch();
+        if (ch == 224) {
+            ch = getch();
             if (ch == 72 && cursor > 0) cursor--;
             else if (ch == 80 && cursor < ctx_.all_characters.size() - 1) cursor++;
             draw();
         }
+#else
+        int ch = getch();
+        if (ch == '\x1b') {
+            ch = getch();
+            if (ch == '[') {
+                ch = getch();
+                if (ch == 'A' && cursor > 0) cursor--;
+                else if (ch == 'B' && cursor < ctx_.all_characters.size() - 1) cursor++;
+                draw();
+            }
+        }
+#endif
         else if (ch == 'e' || ch == 'E') {
             character& current = *ctx_.all_characters[cursor];
             if (current.has_weapon()) {
@@ -219,7 +232,7 @@ void TeamState::view_character_detail() {
                     }
                 }
                 std::cout << "\n武器已卸下！按任意键...";
-                _getch();
+                getch();
             }
             else {
                 std::vector<std::string> weapon_items;
@@ -234,7 +247,7 @@ void TeamState::view_character_detail() {
                 }
                 if (weapon_items.empty()) {
                     std::cout << "\n没有可装备的武器。按任意键...";
-                    _getch();
+                    getch();
                 }
                 else {
                     weapon_items.push_back("取消");
@@ -249,7 +262,7 @@ void TeamState::view_character_detail() {
                         else {
                             std::cout << "\n装备失败！按任意键...";
                         }
-                        _getch();
+                        getch();
                     }
                 }
             }
@@ -266,7 +279,7 @@ void TeamState::view_character_detail() {
                 std::cout << "评分完成！ " << bgrade << " (" << std::fixed << std::setprecision(1) << bscore << ")\n";
                 std::cout << "详细评分数据已缓存，下次查看角色详情时将直接显示。\n";
                 std::cout << "按任意键继续...";
-                _getch();
+                getch();
             }
             draw();
         }

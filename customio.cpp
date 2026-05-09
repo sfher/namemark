@@ -567,7 +567,17 @@ namespace customio {
     };
 
     redraw();
+
+#ifndef _WIN32
+    termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+#endif
+
     while (running) {
+#ifdef _WIN32
         int ch = _getch();
         if (ch == 224) {
             ch = _getch();
@@ -577,13 +587,56 @@ namespace customio {
         } else if (ch == 13) {
             running = false;
         }
+#else
+        char ch;
+        if (read(STDIN_FILENO, &ch, 1) <= 0) continue;
+        if (ch == '\x1b') {
+            char seq[2];
+            if (read(STDIN_FILENO, seq, 2) != 2) continue;
+            if (seq[0] == '[') {
+                if (seq[1] == 'A' && selected > 0) selected--;
+                else if (seq[1] == 'B' && selected < (int)items.size() - 1) selected++;
+                redraw();
+            }
+        } else if (ch == '\n' || ch == '\r') {
+            running = false;
+        }
+#endif
     }
+
+#ifndef _WIN32
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+#endif
+
     return selected;
 }
-    
+
+int getch() {
+#ifdef _WIN32
+    return _getch();
+#else
+    termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    char ch = 0;
+    if (read(STDIN_FILENO, &ch, 1) <= 0) ch = -1;
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return static_cast<unsigned char>(ch);
+#endif
+}
+
+void wait_key() {
+    getch();
+}
+
 } // namespace customio
 
 std::string Utf8ToAnsi(const std::string& utf8_str) {
+#ifdef _WIN32
     if (utf8_str.empty()) return "";
 
     // UTF-8 转 UTF-16
@@ -601,4 +654,8 @@ std::string Utf8ToAnsi(const std::string& utf8_str) {
     // 去除末尾 '\0'
     if (!result.empty() && result.back() == '\0') result.pop_back();
     return result;
+#else
+    // Linux/Unix terminals are natively UTF-8 capable
+    return utf8_str;
+#endif
 }

@@ -157,6 +157,10 @@ namespace customio {
     enum class log_level { INFO, WARN, ERR };
     std::ostream& log(log_level level);
 
+    // ---------- 跨平台单键输入 ----------
+    int  getch();      // 读取一个字符（无回显）；Linux 返回原始字节
+    void wait_key();   // 等待任意按键
+
     // ---------- 初始化（Windows启用ANSI）----------
     void init_console();
 

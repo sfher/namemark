@@ -3,7 +3,6 @@
 #include "../customio.h"
 #include <iostream>
 #include <iomanip>
-#include <conio.h>
 #include <random>
 #include <algorithm>
 
@@ -38,7 +37,7 @@ PullResult GachaState::random_pull() {
 void GachaState::single_pull() {
     if (ctx_.gold < ctx_.gacha_single_cost) {
         std::cout << "金币不足！\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
     ctx_.gold -= ctx_.gacha_single_cost;
@@ -49,7 +48,7 @@ void GachaState::single_pull() {
 void GachaState::ten_pull() {
     if (ctx_.gold < ctx_.gacha_ten_cost) {
         std::cout << "金币不足！\n按任意键返回...";
-        _getch();
+        getch();
         return;
     }
     ctx_.gold -= ctx_.gacha_ten_cost;
@@ -120,7 +119,7 @@ void GachaState::display_result(const std::vector<PullResult>& results) {
 
     std::cout << "\n剩余金币: " << ctx_.gold << "\n";
     std::cout << "按任意键继续...";
-    _getch();
+    getch();
 }
 
 void GachaState::update() {
