@@ -568,6 +568,8 @@ namespace customio {
 
     redraw();
 
+    flush_stdin();
+
 #ifndef _WIN32
     termios oldt, newt;
     tcgetattr(STDIN_FILENO, &oldt);
@@ -611,6 +613,14 @@ namespace customio {
     return selected;
 }
 
+void flush_stdin() {
+#ifdef _WIN32
+    while (_kbhit()) _getch();
+#else
+    tcflush(STDIN_FILENO, TCIFLUSH);
+#endif
+}
+
 int getch() {
 #ifdef _WIN32
     return _getch();
@@ -630,6 +640,7 @@ int getch() {
 }
 
 void wait_key() {
+    flush_stdin();
     getch();
 }
 

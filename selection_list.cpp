@@ -12,6 +12,7 @@ std::vector<size_t> SelectionList::run(RenderItemFunc render_func) {
     clear_screen();
     render_page(render_func);
 
+    flush_stdin();
     while (running) {
 #ifdef _WIN32
         int ch = _getch();

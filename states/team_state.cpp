@@ -200,6 +200,7 @@ void TeamState::view_character_detail() {
 
     draw();
 
+    flush_stdin();
     while (running) {
 #ifdef _WIN32
         int ch = getch();
