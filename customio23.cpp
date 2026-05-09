@@ -1,6 +1,7 @@
 ﻿#include "customio23.h"
 #include <algorithm>
 #include <cctype>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -25,7 +26,7 @@ namespace customio23 {
     const theme& get_theme() { return current_theme; }
 
     void apply_theme() {
-        std::print("{}{}", ansi_bg(current_theme.background), ansi_fg(adaptive_fg(current_theme.text)));
+        cprint("{}{}", ansi_bg(current_theme.background), ansi_fg(adaptive_fg(current_theme.text)));
         clear_screen();
     }
 
@@ -78,23 +79,23 @@ namespace customio23 {
     }
 
     std::string input(std::string_view prompt) {
-        std::print("{}", prompt);
+        cprint("{}", prompt);
         std::string line;
         std::getline(std::cin, line);
         return line;
     }
 
     std::string prompt(std::string_view prompt_text, color c) {
-        std::print("{}{}{}", ansi_bg(current_theme.background),
+        cprint("{}{}{}", ansi_bg(current_theme.background),
             ansi_fg(adaptive_fg(c)), prompt_text);
-        std::print("{}", ansi_fg(adaptive_fg(current_theme.text)));
+        cprint("{}", ansi_fg(adaptive_fg(current_theme.text)));
         std::string line;
         std::getline(std::cin, line);
         return line;
     }
 
     bool confirm(std::string_view prompt, bool default_yes) {
-        std::print("{} [{}]: ", prompt, default_yes ? "Y/n" : "y/N");
+        cprint("{} [{}]: ", prompt, default_yes ? "Y/n" : "y/N");
         std::string ans;
         std::getline(std::cin, ans);
         auto start = ans.find_first_not_of(" \t");
@@ -106,27 +107,27 @@ namespace customio23 {
     // ===== get_password =====
 #ifdef _WIN32
     std::string get_password(std::string_view prompt, char mask) {
-        std::print("{}", prompt);
+        cprint("{}", prompt);
         std::string pwd;
         while (true) {
             int ch = _getch();
-            if (ch == '\r' || ch == '\n') { std::print("\n"); break; }
+            if (ch == '\r' || ch == '\n') { cprint("\n"); break; }
             if (ch == '\b' || ch == 127) {
                 if (!pwd.empty()) {
                     pwd.pop_back();
-                    std::print("\b \b");
+                    cprint("\b \b");
                 }
             }
             else {
                 pwd.push_back((char)ch);
-                std::print("{}", mask);
+                cprint("{}", mask);
             }
         }
         return pwd;
     }
 #else
     std::string get_password(std::string_view prompt, char mask) {
-        std::print("{}", prompt);
+        cprint("{}", prompt);
         std::string pwd;
 
         termios oldt, newt;
@@ -139,18 +140,18 @@ namespace customio23 {
         while (true) {
             read(STDIN_FILENO, &ch, 1);
             if (ch == '\n' || ch == '\r') {
-                std::print("\n");
+                cprint("\n");
                 break;
             }
             else if (ch == 127 || ch == '\b') {
                 if (!pwd.empty()) {
                     pwd.pop_back();
-                    std::print("\b \b");
+                    cprint("\b \b");
                 }
             }
             else {
                 pwd.push_back(ch);
-                std::print("{}", mask);
+                cprint("{}", mask);
             }
         }
 
@@ -184,16 +185,16 @@ namespace customio23 {
 
         auto print_row = [&](const std::vector<std::string>& row, bool is_header) {
             for (size_t i = 0; i < row.size(); ++i) {
-                std::print(" {:<{}} ", row[i], widths[i]);
-                if (i < row.size() - 1) std::print("|");
+                std::cout << " " << std::left << std::setw(widths[i]) << row[i] << " ";
+                if (i < row.size() - 1) std::cout << "|";
             }
-            std::print("\n");
+            std::cout << "\n";
             if (is_header) {
                 for (size_t i = 0; i < row.size(); ++i) {
-                    std::print("{:-<{}}", "", widths[i] + 2);
-                    if (i < row.size() - 1) std::print("+");
+                    std::cout << std::string(widths[i] + 2, '-');
+                    if (i < row.size() - 1) std::cout << "+";
                 }
-                std::print("\n");
+                std::cout << "\n";
             }
             };
 
@@ -258,7 +259,7 @@ namespace customio23 {
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
         auto draw = [&]() {
-            std::print("\033[2J\033[1;1H");
+            cprint("\033[2J\033[1;1H");
             if (!title.empty()) {
                 cprintln("{}", styled(title, current_theme.title, text_style::bold));
             }
@@ -305,22 +306,36 @@ namespace customio23 {
     void progress_bar::update(int progress) {
         progress = std::clamp(progress, 0, total_);
         int pos = progress * width_ / total_;
-        std::print("\r[");
+        cprint("\r[");
         for (int i = 0; i < width_; ++i) {
-            if (i < pos) std::print("{}", fill_);
-            else if (i == pos && progress < total_) std::print(">");
-            else std::print("{}", empty_);
+            if (i < pos) cprint("{}", fill_);
+            else if (i == pos && progress < total_) cprint(">");
+            else cprint("{}", empty_);
         }
-        std::print("]");
+        cprint("]");
         if (show_percent_) {
             int pct = progress * 100 / total_;
-            std::print(" {}%", pct);
+            cprint(" {}%", pct);
         }
     }
 
     void progress_bar::finish() {
         update(total_);
-        std::print("\n");
+        cprint("\n");
+    }
+
+    // ===== operator<< for styled_text =====
+    std::ostream& operator<<(std::ostream& os, const styled_text& st) {
+        if (has_style(st.style, text_style::bold))      os << "\033[1m";
+        if (has_style(st.style, text_style::italic))    os << "\033[3m";
+        if (has_style(st.style, text_style::underline)) os << "\033[4m";
+
+        color use_fg = adaptive_fg(st.fg);
+        os << ansi_fg(use_fg);
+        os << st.text;
+        os << "\033[22m\033[23m\033[24m\033[39m";
+        os << ansi_fg(adaptive_fg(current_theme.text));
+        return os;
     }
 
     // ===== Spinner =====
@@ -329,22 +344,22 @@ namespace customio23 {
 
     void spinner::start() {
         if (!thread_.joinable()) {
-            thread_ = std::jthread([this](std::stop_token stoken) {
+            running_ = true;
+            thread_ = std::thread([this]() {
                 const char frames[] = { '|', '/', '-', '\\' };
                 int i = 0;
-                while (!stoken.stop_requested()) {
-                    std::print("\r{} {}", message_, frames[i % 4]);
+                while (running_) {
+                    std::cout << "\r" << message_ << " " << frames[i % 4] << std::flush;
                     std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     ++i;
                 }
-                // 清除行（安全填充空格）
-                std::print("\r{: <{}}\r", ' ', message_.size() + 4);
-                });
+                std::cout << "\r" << std::string(message_.size() + 4, ' ') << "\r" << std::flush;
+            });
         }
     }
 
     void spinner::stop() {
-        thread_.request_stop();
+        running_ = false;
         if (thread_.joinable()) thread_.join();
     }
 
