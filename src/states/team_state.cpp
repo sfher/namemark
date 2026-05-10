@@ -284,7 +284,7 @@ void TeamState::view_character_detail() {
             }
             draw();
         }
-        else if (ch == 13 || ch == 27) { // Enter 或 Esc
+        else if (ch == 13 || ch == 10 || ch == 27) { // Enter 或 Esc
             running = false;
         }
     }

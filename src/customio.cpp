@@ -406,6 +406,7 @@ namespace customio {
         tcgetattr(STDIN_FILENO, &oldt);
         newt = oldt;
         newt.c_lflag &= ~(ICANON | ECHO);
+    newt.c_iflag &= ~(ICRNL);       // 避免 \r 被转为 \n，保持跨平台一致
         tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
         while (true) {
@@ -575,6 +576,7 @@ namespace customio {
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
+    newt.c_iflag &= ~(ICRNL);       // 避免 \r 被转为 \n，保持跨平台一致
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 #endif
 
@@ -629,6 +631,7 @@ int getch() {
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
+    newt.c_iflag &= ~(ICRNL);       // 避免 \r 被转为 \n，保持跨平台一致
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
     char ch = 0;
