@@ -79,7 +79,7 @@ std::vector<size_t> SelectionList::run(RenderItemFunc render_func) {
                 restore_cursor();
             }
         }
-        else if (ch == 13) { // 回车键
+        else if (ch == 13 || ch == 10) { // 回车键
             running = false;
         }
     }
