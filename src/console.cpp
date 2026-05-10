@@ -949,7 +949,7 @@ void debug_console() {
             }
             continue;
         }
-        if (line.rfind('/cmd', 0) == 0) {
+        if (line.rfind("/cmd", 0) == 0) {
             std::string command = trim(line.substr(6));
             if (command == "") {
                 customio::list_available_themes();
