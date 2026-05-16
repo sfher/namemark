@@ -30,6 +30,11 @@ Game& Game::getInstance() {
 }
 
 void Game::changeState(GameStateType type) {
+    // Push current state onto stack for goBack() (unless current is EXIT or same as target)
+    if (current_type_ != GameStateType::EXIT && current_type_ != type) {
+        state_stack_.push_back(current_type_);
+    }
+
     if (current_state_) {
         current_state_->on_exit();
         current_state_.reset();
@@ -67,6 +72,13 @@ void Game::changeState(GameStateType type) {
     if (current_state_) {
         current_state_->on_enter();
     }
+}
+
+void Game::goBack() {
+    if (state_stack_.empty()) return;
+    GameStateType prev = state_stack_.back();
+    state_stack_.pop_back();
+    changeState(prev);
 }
 
 void Game::run() {

@@ -44,7 +44,7 @@ namespace customio {
 
     const console_theme default_console_theme = {
         color::black,   // background
-        color::black,   // text
+        color::white,   // text
         color::red,     // damage
         color::green,   // heal
         color::cyan,    // attack
@@ -557,17 +557,25 @@ namespace customio {
             std::cout << adaptive_textcolor(theme.title) << bold() << title << resetcolor() << std::endl;
         }
         for (size_t i = 0; i < items.size(); ++i) {
-            if (i == selected) {
+            bool is_cur = (i == (size_t)selected);
+            if (is_cur)
                 std::cout << background(theme.prompt) << adaptive_textcolor(theme.background);
-            }
-            std::cout << "  " << (i == selected ? ">" : " ") << " " << items[i] << "  ";
-            if (i == selected) {
+            // Number + cursor
+            std::cout << "  ";
+            if (is_cur) std::cout << bold();
+            std::cout << i + 1 << ".";
+            if (is_cur) std::cout << resetcolor();
+            std::cout << " " << (is_cur ? ">" : " ") << " ";
+            // Item name
+            if (is_cur) std::cout << bold();
+            std::cout << items[i];
+            if (is_cur) std::cout << resetcolor();
+            if (is_cur)
                 std::cout << resetcolor();
-            }
-            std::cout << std::endl;
+            std::cout << "  " << std::endl;
         }
         std::cout << std::endl;
-        std::cout << "↑↓: 移动  Enter: 确认" << std::endl;
+        std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字: 直达" << std::endl;
     };
 
     redraw();
@@ -579,7 +587,7 @@ namespace customio {
     tcgetattr(STDIN_FILENO, &oldt);
     newt = oldt;
     newt.c_lflag &= ~(ICANON | ECHO);
-    newt.c_iflag &= ~(ICRNL);       // 避免 \r 被转为 \n，保持跨平台一致
+    newt.c_iflag &= ~(ICRNL);
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 #endif
 
@@ -588,25 +596,32 @@ namespace customio {
         int ch = _getch();
         if (ch == 224) {
             ch = _getch();
-            if (ch == 72 && selected > 0) selected--;
-            else if (ch == 80 && selected < (int)items.size() - 1) selected++;
-            redraw();
+            if (ch == 72) { selected = (selected - 1 + (int)items.size()) % (int)items.size(); redraw(); }
+            else if (ch == 80) { selected = (selected + 1) % (int)items.size(); redraw(); }
         } else if (ch == 13) {
             running = false;
+        } else if (ch == 27) {
+            selected = -1; running = false;
+        } else if (ch >= '1' && ch <= '9') {
+            int idx = ch - '1';
+            if (idx < (int)items.size()) { selected = idx; redraw(); }
         }
 #else
         char ch;
         if (read(STDIN_FILENO, &ch, 1) <= 0) continue;
         if (ch == '\x1b') {
             char seq[2];
-            if (read(STDIN_FILENO, seq, 2) != 2) continue;
-            if (seq[0] == '[') {
-                if (seq[1] == 'A' && selected > 0) selected--;
-                else if (seq[1] == 'B' && selected < (int)items.size() - 1) selected++;
-                redraw();
+            int n = read(STDIN_FILENO, seq, 2);
+            if (n <= 0) { selected = -1; running = false; }
+            else if (seq[0] == '[') {
+                if (seq[1] == 'A') { selected = (selected - 1 + (int)items.size()) % (int)items.size(); redraw(); }
+                else if (seq[1] == 'B') { selected = (selected + 1) % (int)items.size(); redraw(); }
             }
         } else if (ch == '\n' || ch == '\r') {
             running = false;
+        } else if (ch >= '1' && ch <= '9') {
+            int idx = ch - '1';
+            if (idx < (int)items.size()) { selected = idx; redraw(); }
         }
 #endif
     }

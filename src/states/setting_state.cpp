@@ -37,6 +37,7 @@ void SettingsState::update() {
         case 2: g_battle_speed = 1.5f; break;
         case 3: g_battle_speed = 2.0f; break;
         case 4: Game::getInstance().changeState(GameStateType::LOBBY); return;
+        case -1: Game::getInstance().goBack(); break;
         default: break;
     }
     // 设置完后可以留在此界面，也可直接返回大厅，这里选择留在设置界面

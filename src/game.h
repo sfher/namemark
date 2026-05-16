@@ -74,15 +74,17 @@ public:
 
     void run();
     void changeState(GameStateType type);
+    void goBack();
     void quit() { running_ = false; }
     GameContext& getContext() { return ctx_; }
 
 private:
-    Game();   // 仅声明，不定义
+    Game();
     ~Game() = default;
 
     bool running_ = true;
     GameContext ctx_;
     std::unique_ptr<GameState> current_state_;
     GameStateType current_type_ = GameStateType::EXIT;
+    std::vector<GameStateType> state_stack_;
 };
