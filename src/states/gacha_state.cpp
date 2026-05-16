@@ -147,5 +147,6 @@ void GachaState::update() {
     case 0: single_pull(); break;
     case 1: ten_pull(); break;
     case 2: Game::getInstance().changeState(GameStateType::LOBBY); break;
+    case -1: Game::getInstance().goBack(); break;
     }
 }

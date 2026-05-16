@@ -212,6 +212,8 @@ void TeamTestState::update() {
         "开始演习",
         "返回大厅"
     };
-    if (menu_select(items) == 0) start_exercise();
+    int choice = menu_select(items);
+    if (choice == 0) start_exercise();
+    else if (choice == -1) Game::getInstance().goBack();
     else Game::getInstance().changeState(GameStateType::LOBBY);
 }

@@ -208,19 +208,18 @@ void TeamState::view_character_detail() {
         int ch = getch();
         if (ch == 224) {
             ch = getch();
-            if (ch == 72 && cursor > 0) cursor--;
-            else if (ch == 80 && cursor < ctx_.all_characters.size() - 1) cursor++;
-            draw();
+            if (ch == 72) { cursor = (cursor - 1 + ctx_.all_characters.size()) % ctx_.all_characters.size(); draw(); }
+            else if (ch == 80) { cursor = (cursor + 1) % ctx_.all_characters.size(); draw(); }
         }
 #else
         int ch = getch();
         if (ch == '\x1b') {
             ch = getch();
-            if (ch == '[') {
+            if (ch == -1) { running = false; } // bare ESC
+            else if (ch == '[') {
                 ch = getch();
-                if (ch == 'A' && cursor > 0) cursor--;
-                else if (ch == 'B' && cursor < ctx_.all_characters.size() - 1) cursor++;
-                draw();
+                if (ch == 'A') { cursor = (cursor - 1 + ctx_.all_characters.size()) % ctx_.all_characters.size(); draw(); }
+                else if (ch == 'B') { cursor = (cursor + 1) % ctx_.all_characters.size(); draw(); }
             }
         }
 #endif
@@ -313,6 +312,7 @@ void TeamState::update() {
         case 1: select_team(); break;
         case 2: view_character_detail(); break;
         case 3: Game::getInstance().changeState(GameStateType::LOBBY); break;
+        case -1: Game::getInstance().goBack(); break;
         default: break;
     }
 }

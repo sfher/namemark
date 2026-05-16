@@ -104,7 +104,11 @@ void AdventureState::show_level_list_menu() {
     menu_items.push_back("重置所有关卡 (调试)");
 
     int choice = menu_select(menu_items, "===== 冒险模式 - 选择关卡 =====");
-    if (choice == -1 || choice == (int)menu_items.size() - 2) { // 返回大厅
+    if (choice == -1) { // ESC
+        Game::getInstance().goBack();
+        return;
+    }
+    if (choice == (int)menu_items.size() - 2) { // 返回大厅
         Game::getInstance().changeState(GameStateType::LOBBY);
         return;
     }
