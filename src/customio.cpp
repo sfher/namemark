@@ -14,6 +14,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <cstdio>
 #endif
 
@@ -610,10 +611,14 @@ namespace customio {
         char ch;
         if (read(STDIN_FILENO, &ch, 1) <= 0) continue;
         if (ch == '\x1b') {
+            // Non-blocking read to distinguish bare ESC from escape sequences
             char seq[2];
+            int fl = fcntl(STDIN_FILENO, F_GETFL, 0);
+            fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
             int n = read(STDIN_FILENO, seq, 2);
+            fcntl(STDIN_FILENO, F_SETFL, fl);
             if (n <= 0) { selected = -1; running = false; }
-            else if (seq[0] == '[') {
+            else if (n >= 2 && seq[0] == '[') {
                 if (seq[1] == 'A') { selected = (selected - 1 + (int)items.size()) % (int)items.size(); redraw(); }
                 else if (seq[1] == 'B') { selected = (selected + 1) % (int)items.size(); redraw(); }
             }
@@ -656,6 +661,53 @@ int getch() {
     if (read(STDIN_FILENO, &ch, 1) <= 0) ch = -1;
 
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return static_cast<unsigned char>(ch);
+#endif
+}
+
+int read_key() {
+#ifdef _WIN32
+    int ch = _getch();
+    if (ch == 224) {
+        ch = _getch();
+        if (ch == 72) return KEY_UP;
+        if (ch == 80) return KEY_DOWN;
+        return ch; // other extended keys
+    }
+    if (ch == 13) return KEY_ENTER;
+    return ch;
+#else
+    termios oldt, newt;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    newt.c_iflag &= ~(ICRNL);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+    char ch = 0;
+    if (read(STDIN_FILENO, &ch, 1) <= 0) {
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        return -1;
+    }
+
+    if (ch == '\x1b') {
+        // Non-blocking read for escape sequence
+        char seq[2];
+        int fl = fcntl(STDIN_FILENO, F_GETFL, 0);
+        fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
+        int n = read(STDIN_FILENO, seq, 2);
+        fcntl(STDIN_FILENO, F_SETFL, fl);
+
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        if (n >= 2 && seq[0] == '[') {
+            if (seq[1] == 'A') return KEY_UP;
+            if (seq[1] == 'B') return KEY_DOWN;
+        }
+        return 27; // bare ESC
+    }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    if (ch == '\n' || ch == '\r') return KEY_ENTER;
     return static_cast<unsigned char>(ch);
 #endif
 }

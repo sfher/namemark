@@ -160,7 +160,14 @@ namespace customio {
     // ---------- 跨平台单键输入 ----------
     void flush_stdin(); // 清空标准输入缓冲区
     int  getch();       // 读取一个字符（无回显）
+    int  read_key();    // 读取按键，正确处理转义序列（上/下/ESC/回车）
     void wait_key();    // 等待任意按键（自动清理残留输入）
+
+    enum {
+        KEY_UP    = 0x100,
+        KEY_DOWN  = 0x101,
+        KEY_ENTER = 0x10D
+    };
 
     // ---------- 初始化（Windows启用ANSI）----------
     void init_console();
