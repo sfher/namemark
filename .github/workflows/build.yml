@@ -23,6 +23,10 @@ jobs:
           } else {
             Write-Error "namemark.exe not found"
           }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: namemark-windows-msvc
+          path: namemark.exe
 
   gcc:
     name: Linux (GCC)
@@ -33,3 +37,7 @@ jobs:
         run: make -j$(nproc)
       - name: Verify binary
         run: test -x namemark && echo "Build SUCCESS"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: namemark-linux-gcc
+          path: namemark
