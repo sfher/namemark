@@ -5,6 +5,7 @@ on:
     branches: [main, linux-compat]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   msvc:
