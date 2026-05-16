@@ -204,26 +204,17 @@ void TeamState::view_character_detail() {
 
     flush_stdin();
     while (running) {
-#ifdef _WIN32
-        int ch = getch();
-        if (ch == 224) {
-            ch = getch();
-            if (ch == 72) { cursor = (cursor - 1 + ctx_.all_characters.size()) % ctx_.all_characters.size(); draw(); }
-            else if (ch == 80) { cursor = (cursor + 1) % ctx_.all_characters.size(); draw(); }
+        int key = read_key();
+        if (key == KEY_UP) {
+            cursor = (cursor - 1 + ctx_.all_characters.size()) % ctx_.all_characters.size(); draw();
         }
-#else
-        int ch = getch();
-        if (ch == '\x1b') {
-            ch = getch();
-            if (ch == -1) { running = false; } // bare ESC
-            else if (ch == '[') {
-                ch = getch();
-                if (ch == 'A') { cursor = (cursor - 1 + ctx_.all_characters.size()) % ctx_.all_characters.size(); draw(); }
-                else if (ch == 'B') { cursor = (cursor + 1) % ctx_.all_characters.size(); draw(); }
-            }
+        else if (key == KEY_DOWN) {
+            cursor = (cursor + 1) % ctx_.all_characters.size(); draw();
         }
-#endif
-        else if (ch == 'e' || ch == 'E') {
+        else if (key == 27 || key == KEY_ENTER || key == '\r' || key == '\n') {
+            running = false;
+        }
+        else if (key == 'e' || key == 'E') {
             character& current = *ctx_.all_characters[cursor];
             if (current.has_weapon()) {
                 std::string removed_id = current.unequip_weapon();
@@ -270,7 +261,7 @@ void TeamState::view_character_detail() {
             }
             draw();
         }
-        else if (ch == 'd' || ch == 'D') {
+        else if (key == 'd' || key == 'D') {
             character& current = *ctx_.all_characters[cursor];
             if (!current.is_benchmark_cached()) {
                 std::cout << "\n正在计算战斗评分 (10场测试)，请稍候...\n";
@@ -284,9 +275,6 @@ void TeamState::view_character_detail() {
                 getch();
             }
             draw();
-        }
-        else if (ch == 13 || ch == 10 || ch == 27) { // Enter 或 Esc
-            running = false;
         }
     }
 }

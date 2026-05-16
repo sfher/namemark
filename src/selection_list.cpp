@@ -1,9 +1,6 @@
 // selection_list.cpp
 #include "selection_list.h"
 #include <iostream>
-#ifdef _WIN32
-#include <conio.h>
-#endif
 
 using namespace customio;
 
@@ -16,65 +13,33 @@ std::vector<size_t> SelectionList::run(RenderItemFunc render_func) {
 
     flush_stdin();
     while (running) {
-#ifdef _WIN32
-        int ch = _getch();
-        if (ch == 224) {
-            ch = _getch();
-            size_t old_cursor = cursor_index_;
-            if (ch == 72) cursor_index_ = (cursor_index_ - 1 + item_count_) % item_count_;
-            else if (ch == 80) cursor_index_ = (cursor_index_ + 1) % item_count_;
+        int key = read_key();
 
-            if (old_cursor != cursor_index_) {
-                render_page(render_func);
-            }
-        } else if (ch == 13 || ch == 10) {
+        if (key == KEY_UP) {
+            size_t old = cursor_index_;
+            cursor_index_ = (cursor_index_ - 1 + item_count_) % item_count_;
+            if (old != cursor_index_) render_page(render_func);
+        }
+        else if (key == KEY_DOWN) {
+            size_t old = cursor_index_;
+            cursor_index_ = (cursor_index_ + 1) % item_count_;
+            if (old != cursor_index_) render_page(render_func);
+        }
+        else if (key == KEY_ENTER || key == '\r' || key == '\n') {
             running = false;
-        } else if (ch == 27) {
-            // ESC — return empty selection
+        }
+        else if (key == 27) { // ESC
             selected_.assign(item_count_, false);
             running = false;
-        } else if (ch >= '1' && ch <= '9') {
-            size_t idx = ch - '1';
+        }
+        else if (key >= '1' && key <= '9') {
+            size_t idx = key - '1';
             if (idx < item_count_ && idx != cursor_index_) {
                 cursor_index_ = idx;
                 render_page(render_func);
             }
-        } else if (ch == 32) { // Space
-            goto handle_space;
         }
-#else
-        int ch = getch();
-        if (ch == '\x1b') {
-            int c2 = getch();
-            if (c2 == -1) {
-                // Bare ESC
-                selected_.assign(item_count_, false);
-                running = false;
-            } else if (c2 == '[') {
-                int c3 = getch();
-                size_t old_cursor = cursor_index_;
-                if (c3 == 'A') cursor_index_ = (cursor_index_ - 1 + item_count_) % item_count_;
-                else if (c3 == 'B') cursor_index_ = (cursor_index_ + 1) % item_count_;
-
-                if (old_cursor != cursor_index_) {
-                    render_page(render_func);
-                }
-            }
-        } else if (ch == '\n' || ch == '\r') {
-            running = false;
-        } else if (ch >= '1' && ch <= '9') {
-            size_t idx = ch - '1';
-            if (idx < item_count_ && idx != cursor_index_) {
-                cursor_index_ = idx;
-                render_page(render_func);
-            }
-        } else if (ch == 32) { // Space
-            goto handle_space;
-        }
-        continue; // skip the handle_space block at bottom
-#endif
-        if (false) {
-        handle_space:
+        else if (key == 32) { // Space
             if (cursor_index_ < item_count_) {
                 bool currently_selected = selected_[cursor_index_];
                 if (!currently_selected) {
