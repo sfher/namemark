@@ -2,5 +2,16 @@ Thumbs.db
 .DS_Store
 *.gch
 *.o
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.user
+*.suo
+*.vcxproj.*
+Debug/
+Release/
 main
 namemark

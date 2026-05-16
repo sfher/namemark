@@ -17,7 +17,9 @@ void TeamState::add_new_character() {
     const auto& theme = get_console_theme();
     std::string name = prompt("请输入新角色名字 (留空随机): ", theme.prompt);
     if (name.empty()) {
-        name = "冒险者" + std::to_string(rand() % 1000);
+        auto& rng = get_random_engine();
+        std::uniform_int_distribution<int> dist(100, 999);
+        name = "冒险者" + std::to_string(dist(rng));
     }
     auto ch = std::make_unique<character>(name);
     ch->SetRule(SHOW_ATTRIBUTES, false);

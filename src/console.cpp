@@ -896,28 +896,36 @@ void debug_console() {
     if (finalists.empty()) {
         std::cout << "没有角色达到战斗测试标准。\n";
     } else {
-        // 使用 printf 对齐表格
-        printf("%-22s %-10s %-10s %-6s %-8s %-8s %-8s\n",
-               "名字", "快速评分", "战斗评分", "等级", "1v1胜率", "1v2胜率", "1v3胜率");
+        // 使用 iostream 输出对齐表格
+        std::cout << std::left
+                  << std::setw(22) << "名字"
+                  << std::setw(10) << "快速评分"
+                  << std::setw(10) << "战斗评分"
+                  << std::setw(6)  << "等级"
+                  << std::setw(8)  << "1v1胜率"
+                  << std::setw(8)  << "1v2胜率"
+                  << std::setw(8)  << "1v3胜率" << std::endl;
         std::cout << std::string(74, '-') << std::endl;
 
         for (const auto& rec : finalists) {
             const auto& rep = rec.report;
-            // 设置等级颜色
             if (rep.grade == "S") std::cout << textcolor(color::red);
             else if (rep.grade == "A") std::cout << textcolor(color::yellow);
             else if (rep.grade == "B") std::cout << textcolor(color::green);
             else std::cout << textcolor(color::cyan);
 
-            printf("%-22s %-10.1f %-10.1f %-6s ",
-                   rec.name.c_str(),
-                   rec.quick_score,
-                   rep.final_score,
-                   rep.grade.c_str());
+            std::cout << std::left
+                      << std::setw(22) << rec.name
+                      << std::fixed << std::setprecision(1)
+                      << std::setw(10) << rec.quick_score
+                      << std::setw(10) << rep.final_score
+                      << std::setw(6)  << rep.grade;
 
             std::cout << resetcolor();
-            printf("%-8.0f%% %-8.0f%% %-8.0f%%\n",
-                   rep.win_rate_1v1, rep.win_rate_1v2, rep.win_rate_1v3);
+            std::cout << std::fixed << std::setprecision(0)
+                      << std::setw(8)  << (std::to_string((int)rep.win_rate_1v1) + "%")
+                      << std::setw(8)  << (std::to_string((int)rep.win_rate_1v2) + "%")
+                      << std::setw(8)  << (std::to_string((int)rep.win_rate_1v3) + "%") << std::endl;
         }
     }
     std::cout << "========================================\n" << std::endl;

@@ -1,6 +1,9 @@
 ﻿// selection_list.cpp
 #include "selection_list.h"
 #include <iostream>
+#ifdef _WIN32
+#include <conio.h>
+#endif
 
 using namespace customio;
 

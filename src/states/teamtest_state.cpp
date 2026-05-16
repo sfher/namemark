@@ -148,14 +148,25 @@ void TeamTestState::print_exercise_report(Team& teamA, Team& teamB) {
 
     auto print_team = [](const std::string& name, const std::vector<std::reference_wrapper<character>>& members) {
         std::cout << adaptive_textcolor(get_console_theme().info) << "[" << name << "]" << resetcolor() << "\n";
-        printf("%-22s %-8s %-8s %-6s %-8s %-8s\n", "名称", "伤害", "承伤", "击杀", "治疗", "评分");
+        std::cout << std::left
+                  << std::setw(22) << "名称"
+                  << std::setw(8)  << "伤害"
+                  << std::setw(8)  << "承伤"
+                  << std::setw(6)  << "击杀"
+                  << std::setw(8)  << "治疗"
+                  << std::setw(8)  << "评分" << std::endl;
         std::cout << std::string(62, '-') << std::endl;
         for (const auto& ref : members) {
             const character& ch = ref.get();
             double score = get_fast_score(ch);
             char grade = (score >= 85) ? 'S' : (score >= 70) ? 'A' : (score >= 55) ? 'B' : (score >= 40) ? 'C' : 'D';
-            printf("%-22s %-8d %-8d %-6d %-8d %c (%.0f)\n",
-                   ch.get_name().c_str(), ch.damage_dealt, ch.damage_taken, ch.kills, ch.healing_done, grade, score);
+            std::cout << std::left
+                      << std::setw(22) << ch.get_name()
+                      << std::setw(8)  << ch.damage_dealt
+                      << std::setw(8)  << ch.damage_taken
+                      << std::setw(6)  << ch.kills
+                      << std::setw(8)  << ch.healing_done
+                      << grade << " (" << std::fixed << std::setprecision(0) << score << ")" << std::endl;
         }
         std::cout << std::string(62, '-') << std::endl;
     };

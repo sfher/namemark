@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 #include <conio.h>
 #else
@@ -23,6 +24,8 @@ namespace customio {
     // ---------- 初始化 ----------
     void init_console() {
 #ifdef _WIN32
+        SetConsoleOutputCP(CP_UTF8);
+        SetConsoleCP(CP_UTF8);
         HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;
         GetConsoleMode(hOut, &dwMode);
@@ -650,26 +653,8 @@ void wait_key() {
 } // namespace customio
 
 std::string Utf8ToAnsi(const std::string& utf8_str) {
-#ifdef _WIN32
-    if (utf8_str.empty()) return "";
-
-    // UTF-8 转 UTF-16
-    int wlen = MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), -1, nullptr, 0);
-    if (wlen == 0) return utf8_str;
-    std::wstring wstr(wlen, L'\0');
-    MultiByteToWideChar(CP_UTF8, 0, utf8_str.c_str(), -1, &wstr[0], wlen);
-
-    // UTF-16 转 ANSI (CP_ACP)
-    int alen = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    if (alen == 0) return utf8_str;
-    std::string result(alen, '\0');
-    WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), -1, &result[0], alen, nullptr, nullptr);
-
-    // 去除末尾 '\0'
-    if (!result.empty() && result.back() == '\0') result.pop_back();
-    return result;
-#else
-    // Linux/Unix terminals are natively UTF-8 capable
+    // Windows 10+ supports UTF-8 natively via SetConsoleOutputCP(CP_UTF8)
+    // and ENABLE_VIRTUAL_TERMINAL_PROCESSING (done in init_console).
+    // Returning as-is avoids data loss from ANSI code page conversion.
     return utf8_str;
-#endif
 }

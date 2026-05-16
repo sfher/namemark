@@ -15,6 +15,7 @@
 #include "console.h"
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 using namespace customio;
 
 Game::Game() {
@@ -103,7 +104,7 @@ void Game::run() {
     SkillRegistry::clearAll();
     registerAllSkills();  // 里面只注册派生类技能
 
-   auto external_skills = SkillLoader::load_from_directory(pkg_path + "/skills/");
+   auto external_skills = SkillLoader::load_from_directory((std::filesystem::path(pkg_path) / "skills").string());
     for (const auto& data : external_skills) {
     SkillInfo info(
         data.display_name,
@@ -119,15 +120,15 @@ void Game::run() {
     SkillRegistry::registerSkill(data.id, info);
     }
     // 加载武器
-    auto templates = WeaponLoader::load_from_file(pkg_path + "/weapons.json");
+    auto templates = WeaponLoader::load_from_file((std::filesystem::path(pkg_path) / "weapons.json").string());
     ctx_.weapon_templates = std::move(templates);
     ctx_.weapons.clear(); // 玩家武器库初始为空
     std::cout << "加载了 " << ctx_.weapon_templates.size() << " 种武器模板\n";
 
     // 3. 加载模组的怪物和关卡（此时已拥有完整的技能表）
     bool ok = true;
-    ok &= ctx_.level_manager.load_from_json(pkg_path + "/levels.json");
-    ok &= ctx_.preset_manager.load_from_json(pkg_path + "/monsters.json");
+    ok &= ctx_.level_manager.load_from_json((std::filesystem::path(pkg_path) / "levels.json").string());
+    ok &= ctx_.preset_manager.load_from_json((std::filesystem::path(pkg_path) / "monsters.json").string());
     ctx_.level_manager.set_preset_manager(&ctx_.preset_manager);
 
     if (!ok) {
@@ -137,7 +138,7 @@ void Game::run() {
     }
 
     std::ifstream file;
-    file.open(pkg_path + "/gacha.json");
+    file.open((std::filesystem::path(pkg_path) / "gacha.json").string());
       if (file.is_open()) {
             nlohmann::json gacha_json;
 			gacha_json = nlohmann::json::parse(file);

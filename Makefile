@@ -1,6 +1,13 @@
 CXX      := g++
 CXXFLAGS := -std=c++17 -Isrc -Ilib
-TARGET   := namemark
+
+ifeq ($(OS),Windows_NT)
+    TARGET := namemark.exe
+    RM     := del /q
+else
+    TARGET := namemark
+    RM     := rm -f
+endif
 
 SRCS := $(wildcard src/*.cpp) \
         $(wildcard src/states/*.cpp) \
@@ -15,6 +22,6 @@ $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(TARGET)
+	$(RM) $(OBJS) $(TARGET)
 
 .PHONY: clean

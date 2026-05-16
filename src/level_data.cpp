@@ -5,6 +5,7 @@
 #include "customio.h"
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 using json = nlohmann::json;
 
@@ -96,6 +97,6 @@ bool LevelManager::load_from_directory(const std::string& dir_path) {
 
 bool LevelManager::load_from_package(const std::string& package_path) {
     levels_.clear();  // 清空旧数据
-    std::string filepath = package_path + "/levels.json";
+    std::string filepath = (std::filesystem::path(package_path) / "levels.json").string();
     return load_from_json(filepath);
 }

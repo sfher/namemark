@@ -4,6 +4,7 @@
 #include "customio.h"
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 
 using json = nlohmann::json;
 
@@ -48,7 +49,7 @@ bool MonsterPresetManager::load_from_json(const std::string& filepath) {
 
 bool MonsterPresetManager::load_from_package(const std::string& package_path) {
     presets_.clear();
-    std::string filepath = package_path + "/monsters.json";
+    std::string filepath = (std::filesystem::path(package_path) / "monsters.json").string();
     return load_from_json(filepath);
 }
 
