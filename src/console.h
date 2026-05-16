@@ -3,10 +3,31 @@
 #include "entity.h"   // 必须，这里 character 可用
 #include <string>
 #include <vector>
+#include <iostream>
 
-struct BattleResult;
-struct BenchmarkReport;
-struct SimulateResult;
+struct BattleResult {
+    bool win;
+    int damage_dealt;
+    int damage_taken;
+};
+
+struct BenchmarkReport {
+    std::string char_name;
+    double win_rate_1v1;
+    double win_rate_1v2;
+    double win_rate_1v3;
+    double final_score;
+    std::string grade;
+    int static_score;
+    void output() { std::cout << final_score; }
+};
+
+struct SimulateResult {
+    int hero_wins = 0;
+    int monster_wins = 0;
+    int draws = 0;
+    double hero_win_rate = 0.0;
+};
 
 void debug_console();
 double get_fast_score(const character& c);

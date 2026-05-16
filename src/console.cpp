@@ -1,4 +1,5 @@
-﻿#include "entity.h"
+﻿#include "console.h"
+#include "entity.h"
 #include "customio.h"
 #include "act.h"
 #include "damage_calculator.h"
@@ -36,13 +37,6 @@ std::string random_string(int min_len, int max_len) {
 // ========== 全局调试存储 ==========
 static std::map<std::string, std::unique_ptr<Team>> debug_teams;
 static std::vector<std::unique_ptr<character>> debug_chars;
-
-// ========== 通用数据结构 ==========
-struct BattleResult {
-    bool win;
-    int damage_dealt;
-    int damage_taken;
-};
 
 // ========== 静态属性评分 ==========
 int calc_static_score(character& c) {
@@ -126,20 +120,7 @@ BattleResult run_1vN_battle(const std::string& char_name, int enemy_count) {
     return { win, total_damage_dealt, hero_damage_taken };
 }
 
-// ========== 基准测试评分报告 ==========
-struct BenchmarkReport {
-    std::string char_name;
-    double win_rate_1v1;   // 对1个标准敌人胜率
-    double win_rate_1v2;   // 对2个标准敌人胜率
-    double win_rate_1v3;   // 对3个标准敌人胜率
-    double final_score;
-    std::string grade;
-    int static_score;
-    void output() {
-        std::cout << final_score;
-    }
-};
-
+// ========== 基准测试评分 ==========
 BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int battles_per_test) {
     BenchmarkReport report = { char_name, 0,0,0,0,"",0 };
 
@@ -324,13 +305,6 @@ void ensure_benchmark_cached(character& c) {
 }
 
 // ========== 批量模拟战斗 ==========
-struct SimulateResult {
-    int hero_wins = 0;
-    int monster_wins = 0;
-    int draws = 0;
-    double hero_win_rate = 0.0;
-};
-
 std::vector<std::string> parse_name_list(const std::string& str) {
     std::vector<std::string> names;
     std::stringstream ss(str);

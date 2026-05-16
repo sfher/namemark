@@ -53,7 +53,7 @@ if /i "%BUILD_MODE%"=="debug" (
 
 :: --- Source file list ---
 set "SRCS="
-for %%f in (act console customio damage_calculator entity file_utils game generic_skill level_data main monster_preset package_manager selection_list skill_data skill_executor skill_loader weapon_data weapon_loader) do (
+for %%f in (act cli console customio damage_calculator entity file_utils game generic_skill level_data main monster_preset package_manager selection_list skill_data skill_executor skill_loader weapon_data weapon_loader) do (
     set "SRCS=!SRCS! %SRCDIR%\%%f.cpp"
 )
 for %%f in (adventure_state gacha_state lobby_state setting_state shop_state team_state teamtest_state) do (
