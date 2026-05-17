@@ -30,6 +30,13 @@ Game& Game::getInstance() {
 }
 
 void Game::changeState(GameStateType type) {
+    // CONSOLE is a transient overlay — don't destroy the current state
+    if (type == GameStateType::CONSOLE) {
+        debug_console();
+        apply_console_theme();  // restore theme after console exit
+        return;
+    }
+
     // Push current state onto stack for goBack() (unless current is EXIT or same as target)
     if (current_type_ != GameStateType::EXIT && current_type_ != type) {
         state_stack_.push_back(current_type_);
@@ -57,9 +64,6 @@ void Game::changeState(GameStateType type) {
         break;
     case GameStateType::SHOP:
         current_state_ = std::make_unique<ShopState>(ctx_);
-        break;
-    case GameStateType::CONSOLE:
-        debug_console();
         break;
     case GameStateType::SETTINGS:
         current_state_ = std::make_unique<SettingsState>(ctx_);

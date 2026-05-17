@@ -551,6 +551,7 @@ namespace customio {
     const auto& theme = get_console_theme();
     int selected = 0;
     bool running = true;
+    std::string digit_buf;
 
     auto redraw = [&]() {
         clear_screen();
@@ -576,7 +577,21 @@ namespace customio {
             std::cout << "  " << std::endl;
         }
         std::cout << std::endl;
-        std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字: 直达" << std::endl;
+        if (digit_buf.empty())
+            std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字: 直达" << std::endl;
+        else
+            std::cout << "跳转至: " << digit_buf << " (Enter确认, 其他键取消)" << std::endl;
+    };
+
+    auto commit_digit = [&]() {
+        if (!digit_buf.empty()) {
+            try {
+                int idx = std::stoi(digit_buf) - 1;
+                if (idx >= 0 && idx < (int)items.size()) selected = idx;
+            } catch (...) {}
+            digit_buf.clear();
+            redraw();
+        }
     };
 
     redraw();
@@ -596,22 +611,24 @@ namespace customio {
 #ifdef _WIN32
         int ch = _getch();
         if (ch == 224) {
+            digit_buf.clear();
             ch = _getch();
             if (ch == 72) { selected = (selected - 1 + (int)items.size()) % (int)items.size(); redraw(); }
             else if (ch == 80) { selected = (selected + 1) % (int)items.size(); redraw(); }
         } else if (ch == 13) {
-            running = false;
+            if (!digit_buf.empty()) { commit_digit(); }
+            else { running = false; }
         } else if (ch == 27) {
             selected = -1; running = false;
-        } else if (ch >= '1' && ch <= '9') {
-            int idx = ch - '1';
-            if (idx < (int)items.size()) { selected = idx; redraw(); }
+        } else if (ch == 8 || ch == 127) {
+            if (!digit_buf.empty()) { digit_buf.pop_back(); redraw(); }
+        } else if (ch >= '0' && ch <= '9') {
+            if (digit_buf.size() < 4) { digit_buf += (char)ch; redraw(); }
         }
 #else
         char ch;
         if (read(STDIN_FILENO, &ch, 1) <= 0) continue;
         if (ch == '\x1b') {
-            // Non-blocking read to distinguish bare ESC from escape sequences
             char seq[2];
             int fl = fcntl(STDIN_FILENO, F_GETFL, 0);
             fcntl(STDIN_FILENO, F_SETFL, fl | O_NONBLOCK);
@@ -619,14 +636,17 @@ namespace customio {
             fcntl(STDIN_FILENO, F_SETFL, fl);
             if (n <= 0) { selected = -1; running = false; }
             else if (n >= 2 && seq[0] == '[') {
+                digit_buf.clear();
                 if (seq[1] == 'A') { selected = (selected - 1 + (int)items.size()) % (int)items.size(); redraw(); }
                 else if (seq[1] == 'B') { selected = (selected + 1) % (int)items.size(); redraw(); }
             }
         } else if (ch == '\n' || ch == '\r') {
-            running = false;
-        } else if (ch >= '1' && ch <= '9') {
-            int idx = ch - '1';
-            if (idx < (int)items.size()) { selected = idx; redraw(); }
+            if (!digit_buf.empty()) { commit_digit(); }
+            else { running = false; }
+        } else if (ch == 127 || ch == '\b') {
+            if (!digit_buf.empty()) { digit_buf.pop_back(); redraw(); }
+        } else if (ch >= '0' && ch <= '9') {
+            if (digit_buf.size() < 4) { digit_buf += ch; redraw(); }
         }
 #endif
     }
