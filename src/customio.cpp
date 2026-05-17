@@ -159,6 +159,7 @@ namespace customio {
         return true;
     }
 
+    // 应用当前主题：设置背景色 + 自适应文字色 + 清屏
     void apply_console_theme() {
         const auto& theme = current_console_theme;
         std::cout << background(theme.background) << adaptive_textcolor(theme.text);
@@ -211,6 +212,7 @@ namespace customio {
         return c == color::white || c == color::yellow || c == color::cyan || c == color::magenta || c == color::orange;
     }
 
+    // 确保文字与背景不撞色：背景亮时返回暗色，暗时返回亮色
     color resolve_text_color(color background, color desired) {
         if (desired == color::reset) return desired;
         if (background == desired) {
@@ -545,6 +547,9 @@ namespace customio {
         return dist(rng) <= probability;
     }
 
+// 交互式菜单选择。返回选中索引（0-based），ESC 返回 -1。
+// ≤9 项时数字键直接跳转，≥10 项时数字缓冲 + Enter 确认。
+// 列表首尾循环互绕，↑↓ 导航。
   int menu_select(const std::vector<std::string>& items, const std::string& title) {
     if (items.empty()) return -1;
 
@@ -577,9 +582,12 @@ namespace customio {
             std::cout << "  " << std::endl;
         }
         std::cout << std::endl;
-        if (digit_buf.empty())
-            std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字: 直达" << std::endl;
-        else
+        if (digit_buf.empty()) {
+            if (items.size() <= 9)
+                std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字键: 直达" << std::endl;
+            else
+                std::cout << "↑↓: 移动  Enter: 确认  Esc: 返回  数字: 直达" << std::endl;
+        } else
             std::cout << "跳转至: " << digit_buf << " (Enter确认, 其他键取消)" << std::endl;
     };
 
@@ -623,7 +631,12 @@ namespace customio {
         } else if (ch == 8 || ch == 127) {
             if (!digit_buf.empty()) { digit_buf.pop_back(); redraw(); }
         } else if (ch >= '0' && ch <= '9') {
-            if (digit_buf.size() < 4) { digit_buf += (char)ch; redraw(); }
+            if (items.size() <= 9) {
+                int idx = ch - '1';
+                if (idx >= 0 && idx < (int)items.size()) { selected = idx; redraw(); }
+            } else if (digit_buf.size() < 4) {
+                digit_buf += (char)ch; redraw();
+            }
         }
 #else
         char ch;
@@ -646,7 +659,12 @@ namespace customio {
         } else if (ch == 127 || ch == '\b') {
             if (!digit_buf.empty()) { digit_buf.pop_back(); redraw(); }
         } else if (ch >= '0' && ch <= '9') {
-            if (digit_buf.size() < 4) { digit_buf += ch; redraw(); }
+            if (items.size() <= 9) {
+                int idx = ch - '1';
+                if (idx >= 0 && idx < (int)items.size()) { selected = idx; redraw(); }
+            } else if (digit_buf.size() < 4) {
+                digit_buf += ch; redraw();
+            }
         }
 #endif
     }
@@ -685,6 +703,9 @@ int getch() {
 #endif
 }
 
+// 跨平台按键读取：自动识别转义序列。
+// 返回 KEY_UP / KEY_DOWN / KEY_ENTER / ESC(27) 或普通字符。
+// Linux 下用 fcntl(O_NONBLOCK) 处理裸 ESC 与箭头键的区分。
 int read_key() {
 #ifdef _WIN32
     int ch = _getch();

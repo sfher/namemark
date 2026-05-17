@@ -18,10 +18,9 @@
 #include <filesystem>
 using namespace customio;
 
+// 构造函数：仅关联 level → preset 管理器（配置由 run() 按模组加载）
 Game::Game() {
-    ctx_.preset_manager.load_from_json("monsters.json");
     ctx_.level_manager.set_preset_manager(&ctx_.preset_manager);
-    ctx_.level_manager.load_from_json("levels.json");
 }
 
 Game& Game::getInstance() {
@@ -29,6 +28,7 @@ Game& Game::getInstance() {
     return instance;
 }
 
+// 切换游戏状态。CONSOLE 为浮层不销毁当前状态；其他状态先推入栈中以支持 goBack()
 void Game::changeState(GameStateType type) {
     // CONSOLE is a transient overlay — don't destroy the current state
     if (type == GameStateType::CONSOLE) {
@@ -78,6 +78,7 @@ void Game::changeState(GameStateType type) {
     }
 }
 
+// ESC 返回：弹出状态栈顶并切换（栈空则无操作）
 void Game::goBack() {
     if (state_stack_.empty()) return;
     GameStateType prev = state_stack_.back();
@@ -85,6 +86,7 @@ void Game::goBack() {
     changeState(prev);
 }
 
+// 主入口：模组选择 → 加载技能/武器/关卡/怪物/抽卡 → 进入状态机循环
 void Game::run() {
     // 1. 扫描模组
     auto packages = ctx_.package_manager.scan();
@@ -143,8 +145,8 @@ void Game::run() {
 
     // 3. 加载模组的怪物和关卡（此时已拥有完整的技能表）
     bool ok = true;
-    ok &= ctx_.level_manager.load_from_json((std::filesystem::path(pkg_path) / "levels.json").string());
-    ok &= ctx_.preset_manager.load_from_json((std::filesystem::path(pkg_path) / "monsters.json").string());
+    ok &= ctx_.level_manager.load_from_package(pkg_path);
+    ok &= ctx_.preset_manager.load_from_package(pkg_path);
     ctx_.level_manager.set_preset_manager(&ctx_.preset_manager);
 
     if (!ok) {

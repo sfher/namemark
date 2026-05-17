@@ -121,6 +121,7 @@ BattleResult run_1vN_battle(const std::string& char_name, int enemy_count) {
 }
 
 // ========== 基准测试评分 ==========
+// 对指定角色名进行 N 场 1v1/1v2/1v3 战斗，返回胜率、综合评分、等级
 BenchmarkReport evaluate_character_benchmark(const std::string& char_name, int battles_per_test) {
     BenchmarkReport report = { char_name, 0,0,0,0,"",0 };
 
@@ -389,6 +390,7 @@ void output_help() {
     themed_println("----------------------------------------", color::white);
 }
 // ========== Debug Console ==========
+// 交互式调试终端：支持创建队伍/角色、战斗、角色评测、批量模拟、加护检测等
 void debug_console() {
     set_theme_by_name("default"); // 默认使用 default 主题
 
