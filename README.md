@@ -4,26 +4,57 @@
 
 ## 快速开始
 
+### 直接运行（从 Release 下载）
+
+从 [Releases](../../releases) 下载对应平台的二进制文件：
+- **Windows**：`namemark.exe`
+- **Linux**：`namemark`
+
 ### 编译运行
 
+**Linux / macOS：**
 ```bash
-g++ -std=c++17 ./*.cpp states/*.cpp -o main
-./main
+make -j$(nproc)
+./namemark
 ```
 
-支持 Linux / macOS / Windows（MSVC 或 MinGW）。
+**Windows（MSVC）：**
+```bat
+build.bat
+namemark.exe
+```
 
-### 基本操作
+### CLI 命令行模式
+
+无参数启动进入交互游戏，带参数可直接执行业务命令：
+
+```
+namemark test <角色名>              角色评测（属性 + 1v1/1v2/1v3 胜率）
+namemark ftest <角色名>             快速静态评分
+namemark find [数量]                随机加护检测（默认1000次）
+namemark hfind [快速阈值] [战斗阈值] [数量]  高分角色搜索
+namemark simulate <英雄列表> vs <怪物列表> [场次]  批量战斗模拟
+namemark simulatex <英雄列表> vs <怪物列表> [场次]  模拟（显示日志）
+namemark import <json文件>          从 JSON 导入角色
+namemark console                   直接进入调试控制台
+namemark help                      显示帮助
+```
+
+列表用逗号分隔，如 `namemark simulate Arthur,Lance vs Goblin,Orc 100`
+
+## 基本操作
 
 | 按键 | 场景 | 功能 |
 |------|------|------|
-| ↑ ↓ | 所有菜单 | 移动光标 / 选择上一项下一项 |
+| ↑ ↓ | 所有菜单 | 移动光标（列表首尾循环互绕） |
 | Enter | 所有菜单 | 确认当前选项 |
+| 数字键 | 所有菜单 | 输入序号直达目标项，两位数按完后回车确认 |
+| Esc | 所有菜单 | 返回上级 |
 | Space | 多选列表 | 勾选 / 取消勾选当前项 |
 | E | 角色详情 | 装备 / 卸下武器 |
 | D | 角色详情 | 运行战斗评分测试 |
-| Esc | 角色详情 | 返回上级菜单 |
 | 任意键 | 消息提示后 | 继续 |
+| Ctrl+C | 任意 | 恢复终端原主题后退出 |
 
 ## 游戏流程
 
@@ -217,24 +248,49 @@ g++ -std=c++17 ./*.cpp states/*.cpp -o main
 | 群体攻击 | AOE_DAMAGE | 全体敌人 | 高消耗 | 1.2–3.0 |
 | 自身增益 | SELF_BUFF | NONE | 中等消耗 | 无 |
 
-## 五、控制台调试命令
+## 五、控制台与 CLI
 
-游戏内进入控制台后，输入 `/help` 可查看完整命令列表：
+### CLI 命令行
+
+```bash
+# 角色评测
+namemark test 亚瑟
+
+# 快速评分
+namemark ftest 兰斯洛特
+
+# 随机加护检测
+namemark find 1000
+
+# 高分搜索
+namemark hfind 70 70 5000
+
+# 批量模拟
+namemark simulate 亚瑟,兰斯洛特 vs 哥布林,兽人 100
+
+# 直接进入调试控制台
+namemark console
+```
+
+### 调试控制台命令
+
+游戏内进入控制台后（或 `namemark console`），输入 `/help` 可查看完整命令列表：
 
 | 命令 | 说明 |
 |------|------|
 | `@TeamName` | 创建队伍 |
 | `CharName @TeamName` | 创建角色并编入队伍 |
 | `/fight` | 所有队伍对战 |
-| `/test CharName` | 查看角色详细属性 |
-| `/ftest [CharName]` | 快速静态评分 |
+| `/test CharName` | 查看角色详细属性与战斗评分 |
+| `/ftest [CharName]` | 快速静态评分（留空进入交互模式） |
 | `/simulate A vs B [回合]` | 批量战斗模拟 |
-| `/find [数量]` | 查找有加护的角色 |
+| `/simulatex A vs B [回合]` | 模拟（显示战斗日志） |
+| `/find [数量]` | 查找有加护的角色（留空扫描已创建角色） |
+| `/hfind [快速门槛] [战斗门槛] [数量]` | 双层筛选高分角色 |
 | `/theme [名称]` | 切换控制台主题 |
 | `/settheme` | 交互式主题选择器 |
 | `/import <路径>` | 从 JSON 导入角色 |
-| `/hfind` | 高分角色搜索 |
-| `/end` | 退出控制台 |
+| `/end` | 退出控制台（返回游戏大厅） |
 
 可用主题：`default`（黑底白字）、`light`（白底黑字）、`dark`（黑底绿字）、`retro`（琥珀色）、`highcontrast`（黄底黑字高对比）。
 
@@ -250,13 +306,14 @@ g++ -std=c++17 ./*.cpp states/*.cpp -o main
 
 ```
 namemark/
-├── packages/             # 模组包目录
-├── config/skills/        # 技能配置文件
-├── states/               # 游戏状态（大厅、队伍、冒险、商店、抽卡等）
-├── monsters.json         # 怪物预设
-├── levels.json           # 关卡配置
-├── weapons.json          # 武器模板
-├── customio.h/cpp        # 跨平台终端 I/O 库
-├── customio23.h/cpp      # C++17 兼容终端 I/O 库（备选）
-└── namemark_version1.4.cpp  # 入口点
+├── packages/              # 模组包目录
+├── config/skills/         # 技能配置文件
+├── src/                   # 源代码
+│   └── states/            # 游戏状态（大厅、队伍、冒险、商店、抽卡等）
+├── lib/                   # 第三方库（json.hpp, customio23）
+├── monsters.json          # 怪物预设
+├── levels.json            # 关卡配置
+├── .github/workflows/     # CI 构建验证
+├── Makefile               # Linux/macOS 构建
+└── build.bat              # Windows MSVC 构建
 ```
