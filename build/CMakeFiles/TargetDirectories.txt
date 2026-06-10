@@ -1,0 +1,3 @@
+C:/Users/DELL/namemark/build/CMakeFiles/namemark.dir
+C:/Users/DELL/namemark/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/DELL/namemark/build/CMakeFiles/ZERO_CHECK.dir
